@@ -1,0 +1,8 @@
+//arch = zynqmp; split = false; format = BIN
+the_ROM_image:
+{
+	[bootloader, destination_cpu = a53-0]C:\Xilinx\workspace\L3\UltraZed-EG-Platform\export\UltraZed-EG-Platform\sw\UltraZed-EG-Platform\boot\fsbl.elf
+	[pmufw_image]C:\Xilinx\workspace\L3\UltraZed-EG-Platform\export\UltraZed-EG-Platform\sw\UltraZed-EG-Platform\boot\pmufw.elf
+	[destination_device = pl]C:/Xilinx/workspace/L3/UltraZed-EG-wolf/_ide/bitstream/design_1_wrapper.bit
+	[destination_cpu = a53-0]C:/Xilinx/workspace/L3/UltraZed-EG-wolf/Debug/UltraZed-EG-wolf.elf
+}

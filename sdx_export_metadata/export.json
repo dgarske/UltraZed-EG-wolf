@@ -1,0 +1,76 @@
+{
+  "version": "2020.1",
+  "applications": [],
+  "platforms": [
+    {
+      "name": "UltraZed-EG-Platform"
+    }
+  ],
+  "systems": [
+    {
+      "name": "UltraZed-EG-wolf_system",
+      "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+      "sysConfig": "UltraZed-EG-Platform",
+      "applications": [
+        {
+          "name": "UltraZed-EG-wolf",
+          "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+          "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform",
+          "sysConfig": "UltraZed-EG-Platform",
+          "domain": "freertos10_xilinx_domain",
+          "system": "UltraZed-EG-wolf_system"
+        },
+        {
+          "name": "wolfssl-lib",
+          "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+          "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform",
+          "sysConfig": "UltraZed-EG-Platform",
+          "domain": "freertos10_xilinx_domain",
+          "system": "UltraZed-EG-wolf_system"
+        },
+        {
+          "name": "wolftpm-lib",
+          "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+          "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform",
+          "sysConfig": "UltraZed-EG-Platform",
+          "domain": "freertos10_xilinx_domain",
+          "system": "UltraZed-EG-wolf_system"
+        }
+      ],
+      "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform"
+    },
+    {
+      "name": "fsbl_system",
+      "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+      "sysConfig": "UltraZed-EG-Platform",
+      "applications": [
+        {
+          "name": "fsbl",
+          "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+          "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform",
+          "sysConfig": "UltraZed-EG-Platform",
+          "domain": "domain_psu_cortexa53_0",
+          "system": "fsbl_system"
+        }
+      ],
+      "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform"
+    },
+    {
+      "name": "wolfboot_system",
+      "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+      "sysConfig": "UltraZed-EG-Platform",
+      "applications": [
+        {
+          "name": "wolfboot",
+          "platform": "C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm",
+          "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform",
+          "sysConfig": "UltraZed-EG-Platform",
+          "domain": "domain_psu_cortexa53_0",
+          "system": "wolfboot_system"
+        }
+      ],
+      "platformPath": "C:\\Xilinx\\workspace\\L3\\UltraZed-EG-Platform\\export\\UltraZed-EG-Platform"
+    }
+  ],
+  "others": []
+}
