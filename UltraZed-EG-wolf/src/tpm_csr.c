@@ -30,6 +30,7 @@
 #include <wolfssl/wolfcrypt/asn_public.h>
 
 #include <stdio.h>
+#include "xil_printf.h"
 
 #ifndef NO_RSA
 static const char* gClientCertRsaFile = "./certs/tpm-rsa-cert.csr";
@@ -109,8 +110,8 @@ static int TPM2_CSR_Generate(WOLFTPM2_DEV* dev, int key_type, void* wolfKey,
     if (rc <= 0) goto exit;
     output.size = rc;
 
-    printf("Generated/Signed Cert (DER %d, PEM %d)\n", der.size, output.size);
-    printf("%s\n", (char*)output.buffer);
+    printf("Generated/Signed Cert (DER %d, PEM %d)\n\r", der.size, output.size);
+    printf("%s\n\r", (char*)output.buffer);
 
 #if !defined(NO_FILESYSTEM) && !defined(NO_WRITE_TEMP_FILES)
     {
@@ -150,7 +151,7 @@ int TPM2_CSR_Example(void* userCtx)
     TpmCryptoDevCtx tpmCtx;
     int tpmDevId;
 
-    printf("TPM2 CSR Example\n");
+    printf("TPM2 CSR Example\n\r");
 
     /* Init the TPM2 device */
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
@@ -196,12 +197,10 @@ int TPM2_CSR_Example(void* userCtx)
     }
 
 #ifndef NO_RSA
-    /* Create/Load RSA key for CSR */
+    /* Create/Load RSA key for CSR (AIK) */
     rc = wolfTPM2_ReadPublicKey(&dev, &rsaKey, TPM2_DEMO_RSA_KEY_HANDLE);
     if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_RSA(&publicTemplate,
-            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
-            TPMA_OBJECT_decrypt | TPMA_OBJECT_sign | TPMA_OBJECT_noDA);
+        rc = wolfTPM2_GetKeyTemplate_RSA_AIK(&publicTemplate);
         if (rc != 0) goto exit;
         rc = wolfTPM2_CreateAndLoadKey(&dev, &rsaKey, &storageKey.handle,
             &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
@@ -231,13 +230,10 @@ int TPM2_CSR_Example(void* userCtx)
 
 
 #ifdef HAVE_ECC
-    /* Create/Load ECC key for CSR */
+    /* Create/Load ECC key for CSR (AIK) */
     rc = wolfTPM2_ReadPublicKey(&dev, &eccKey, TPM2_DEMO_ECC_KEY_HANDLE);
     if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_ECC(&publicTemplate,
-            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
-            TPMA_OBJECT_sign | TPMA_OBJECT_noDA,
-            TPM_ECC_NIST_P256, TPM_ALG_ECDSA);
+        rc = wolfTPM2_GetKeyTemplate_ECC_AIK(&publicTemplate);
         if (rc != 0) goto exit;
         rc = wolfTPM2_CreateAndLoadKey(&dev, &eccKey, &storageKey.handle,
             &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
@@ -268,7 +264,7 @@ int TPM2_CSR_Example(void* userCtx)
 exit:
 
     if (rc != 0) {
-        printf("Failure 0x%x: %s\n", rc, wolfTPM2_GetRCString(rc));
+        printf("Failure 0x%x: %s\n\r", rc, wolfTPM2_GetRCString(rc));
     }
 
 #ifndef NO_RSA

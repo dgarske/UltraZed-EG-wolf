@@ -30,6 +30,11 @@
 #include "xuartps_hw.h"
 
 #include "wolfssl/wolfcrypt/settings.h"
+#include "wolfssl/wolfcrypt/wc_port.h"
+#include "wolfssl/wolfcrypt/types.h"
+
+#include "wolftpm/tpm2_wrap.h"
+#include "tpm_io.h"
 
 #include "compile_time.h"
 
@@ -71,24 +76,46 @@ unsigned int LowResTimer(void)
 }
 #endif
 
-#ifndef NO_CRYPT_BENCHMARK
-/* This is used by wolfCrypt benchmark tool only */
-double current_time(int reset)
+#if defined(WOLFSSL_TLS13) && defined(HAVE_SESSION_TICKET)
+word32 TimeNowInMilliseconds(void)
 {
-    double time;
-	int timeMs = hw_get_time_sec();
-    (void)reset;
-    time = (timeMs / 1000); // sec
-    time += (double)(timeMs % 1000) / 1000; // ms
-    return time;
+    return hw_get_time_sec() * 1000;
 }
 #endif
 
-/* Test RNG Seed Function */
-/* TODO: Must provide real seed to RNG */
-unsigned char my_rng_seed_gen(void)
+#ifndef NO_CRYPT_BENCHMARK
+/* This is used by wolfCrypt benchmark tool only */
+#ifndef XPAR_CPU_CORTEXA53_0_TIMESTAMP_CLK_FREQ
+    #define XPAR_CPU_CORTEXA53_0_TIMESTAMP_CLK_FREQ 50000000
+#endif
+#ifndef COUNTS_PER_SECOND
+    #define COUNTS_PER_SECOND     XPAR_CPU_CORTEXA53_0_TIMESTAMP_CLK_FREQ
+#endif
+double current_time(int reset)
 {
-	static unsigned int kTestSeed = 1;
-	#warning Must implement your own RNG source
-	return kTestSeed++;
+    double timer;
+    uint64_t cntPct = 0;
+    asm volatile("mrs %0, CNTPCT_EL0" : "=r" (cntPct));
+
+    /* Convert to milliseconds */
+    timer = (double)(cntPct / (COUNTS_PER_SECOND / 1000));
+    /* Convert to seconds.millisecond */
+    timer /= 1000;
+    return timer;
+}
+#endif
+
+/* RNG Seed Function */
+int my_rng_seed_gen(byte* output, word32 sz)
+{
+    int rc;
+    WOLFTPM2_DEV dev;
+    
+    rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
+    if (rc == 0) {
+        rc = wolfTPM2_GetRandom(&dev, output, sz);
+        wolfTPM2_Cleanup(&dev);
+    }
+
+    return rc;
 }

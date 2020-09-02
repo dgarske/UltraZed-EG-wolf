@@ -35,6 +35,7 @@
 #include "networking.h"
 
 #include <stdio.h>
+#include "xil_printf.h"
 
 #ifdef __cplusplus
     extern "C" {
@@ -100,18 +101,18 @@ static inline int myVerify(int preverify, WOLFSSL_X509_STORE_CTX* store)
      * store->ex_data:      The WOLFSSL object pointer
      */
 
-    printf("In verification callback, error = %d, %s\n",
+    xil_printf("In verification callback, error = %d, %s\n\r",
         store->error, wolfSSL_ERR_reason_error_string(store->error));
-    printf("\tPeer certs: %d\n", store->totalCerts);
-    printf("\tSubject's domain name at %d is %s\n",
+    xil_printf("\tPeer certs: %d\n\r", store->totalCerts);
+    xil_printf("\tSubject's domain name at %d is %s\n\r",
         store->error_depth, store->domain);
 
     (void)preverify;
 
     /* If error indicate we are overriding it for testing purposes */
     if (store->error != 0) {
-        printf("\tAllowing failed certificate check, testing only "
-            "(shouldn't do this in production)\n");
+        xil_printf("\tAllowing failed certificate check, testing only "
+            "(shouldn't do this in production)\n\r");
     }
 
     /* A non-zero return code indicates failure override */
@@ -150,7 +151,7 @@ static inline int myTpmCheckKey(wc_CryptoInfo* info, TpmCryptoDevCtx* ctx)
 
         if (ret == 0 && XMEMCMP(n, n2, nSz) == 0) {
         #ifdef DEBUG_WOLFTPM
-            printf("Detected dummy key, so using TPM RSA key handle\n");
+            xil_printf("Detected dummy key, so using TPM RSA key handle\n\r");
         #endif
             ret = 1;
         }
@@ -183,7 +184,7 @@ static inline int myTpmCheckKey(wc_CryptoInfo* info, TpmCryptoDevCtx* ctx)
         if (ret == 0 && XMEMCMP(qx, qx2, qxSz) == 0 &&
                         XMEMCMP(qy, qy2, qySz) == 0) {
         #ifdef DEBUG_WOLFTPM
-            printf("Detected dummy key, so using TPM ECC key handle\n");
+            xil_printf("Detected dummy key, so using TPM ECC key handle\n\r");
         #endif
             ret = 1;
         }

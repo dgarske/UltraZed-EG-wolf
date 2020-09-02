@@ -122,4 +122,6 @@
 
 #define CONFIG_LINKSPEED_AUTODETECT 1
 
+#define LWIP_DNS 1
+
 #endif

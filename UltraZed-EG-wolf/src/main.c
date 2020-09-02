@@ -38,7 +38,7 @@ void networking_start(void*);
 int main()
 {
 	sys_thread_new("menu", wolfmenu_thread, 0,
-	                ((32*1024)/sizeof(size_t)), /* 32KB */
+	                ((64*1024)/sizeof(size_t)), /* 64KB */
 	                DEFAULT_THREAD_PRIO);
 
 	sys_thread_new("net", networking_start, 0,

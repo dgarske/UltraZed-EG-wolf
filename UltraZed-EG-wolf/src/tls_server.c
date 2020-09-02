@@ -91,18 +91,18 @@ int TPM2_TLS_Server(void* userCtx)
     WOLFSSL* ssl = NULL;
 #ifndef TLS_BENCH_MODE
     const char webServerMsg[] =
-        "HTTP/1.1 200 OK\n"
-        "Content-Type: text/html\n"
-        "Connection: close\n"
-        "\n"
-        "<html>\n"
-        "<head>\n"
-        "<title>Welcome to wolfSSL!</title>\n"
-        "</head>\n"
-        "<body>\n"
-        "<p>wolfSSL has successfully performed handshake!</p>\n"
-        "</body>\n"
-        "</html>\n";
+        "HTTP/1.1 200 OK\n\r"
+        "Content-Type: text/html\n\r"
+        "Connection: close\n\r"
+        "\n\r"
+        "<html>\n\r"
+        "<head>\n\r"
+        "<title>Welcome to wolfSSL!</title>\n\r"
+        "</head>\n\r"
+        "<body>\n\r"
+        "<p>wolfSSL has successfully performed handshake!</p>\n\r"
+        "</body>\n\r"
+        "</html>\n\r";
 #endif
     char msg[MAX_MSG_SZ];
     int msgSz = 0;
@@ -114,7 +114,7 @@ int TPM2_TLS_Server(void* userCtx)
     XMEMSET(&sockIoCtx, 0, sizeof(sockIoCtx));
     sockIoCtx.fd = -1;
 
-    printf("TPM2 TLS Server Example\n");
+    xil_printf("TPM2 TLS Server Example\n\r");
 
     /* Init the TPM2 device */
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
@@ -268,23 +268,23 @@ int TPM2_TLS_Server(void* userCtx)
     #if !defined(NO_RSA) && !defined(TLS_USE_ECC)
     if (wolfSSL_CTX_load_verify_locations(ctx, "./certs/ca-rsa-cert.pem",
         0) != WOLFSSL_SUCCESS) {
-        printf("Error loading ca-rsa-cert.pem cert\n");
+        xil_printf("Error loading ca-rsa-cert.pem cert\n\r");
         goto exit;
     }
     if (wolfSSL_CTX_load_verify_locations(ctx, "./certs/wolf-ca-rsa-cert.pem",
         0) != WOLFSSL_SUCCESS) {
-        printf("Error loading wolf-ca-rsa-cert.pem cert\n");
+        xil_printf("Error loading wolf-ca-rsa-cert.pem cert\n\r");
         goto exit;
     }
     #elif defined(HAVE_ECC)
     if (wolfSSL_CTX_load_verify_locations(ctx, "./certs/ca-ecc-cert.pem",
         0) != WOLFSSL_SUCCESS) {
-        printf("Error loading ca-ecc-cert.pem cert\n");
+        xil_printf("Error loading ca-ecc-cert.pem cert\n\r");
         goto exit;
     }
     if (wolfSSL_CTX_load_verify_locations(ctx, "./certs/wolf-ca-ecc-cert.pem",
         0) != WOLFSSL_SUCCESS) {
-        printf("Error loading wolf-ca-ecc-cert.pem cert\n");
+        xil_printf("Error loading wolf-ca-ecc-cert.pem cert\n\r");
         goto exit;
     }
     #endif
@@ -302,11 +302,11 @@ int TPM2_TLS_Server(void* userCtx)
 #else
     /* Server certificate */
 #if !defined(NO_RSA) && !defined(TLS_USE_ECC)
-    printf("Loading RSA certificate and dummy key\n");
+    xil_printf("Loading RSA certificate and dummy key\n\r");
 
     if ((rc = wolfSSL_CTX_use_certificate_file(ctx, "./certs/server-rsa-cert.pem",
         WOLFSSL_FILETYPE_PEM)) != WOLFSSL_SUCCESS) {
-        printf("Error loading RSA client cert\n");
+        xil_printf("Error loading RSA client cert\n\r");
         goto exit;
     }
 
@@ -314,15 +314,15 @@ int TPM2_TLS_Server(void* userCtx)
     /* TLS server requires some dummy key loaded (workaround) */
     if (wolfSSL_CTX_use_PrivateKey_buffer(ctx, DUMMY_RSA_KEY,
             sizeof(DUMMY_RSA_KEY), WOLFSSL_FILETYPE_ASN1) != WOLFSSL_SUCCESS) {
-        printf("Failed to set key!\r\n");
+        xil_printf("Failed to set key!\r\n");
         goto exit;
     }
 #elif defined(HAVE_ECC)
-    printf("Loading ECC certificate and dummy key\n");
+    xil_printf("Loading ECC certificate and dummy key\n\r");
 
     if ((rc = wolfSSL_CTX_use_certificate_file(ctx, "./certs/server-ecc-cert.pem",
         WOLFSSL_FILETYPE_PEM)) != WOLFSSL_SUCCESS) {
-        printf("Error loading ECC client cert\n");
+        xil_printf("Error loading ECC client cert\n\r");
         goto exit;
     }
 
@@ -330,7 +330,7 @@ int TPM2_TLS_Server(void* userCtx)
     /* TLS server requires some dummy key loaded (workaround) */
     if (wolfSSL_CTX_use_PrivateKey_buffer(ctx, DUMMY_ECC_KEY,
             sizeof(DUMMY_ECC_KEY), WOLFSSL_FILETYPE_ASN1) != WOLFSSL_SUCCESS) {
-        printf("Failed to set key!\r\n");
+        xil_printf("Failed to set key!\r\n");
         goto exit;
     }
 #endif
@@ -377,7 +377,7 @@ int TPM2_TLS_Server(void* userCtx)
     }
 #ifdef TLS_BENCH_MODE
     benchStart = gettime_secs(0) - benchStart;
-    printf("Accept: %9.3f sec (%9.3f CPS)\n", benchStart, 1/benchStart);
+    xil_printf("Accept: %9.3f sec (%9.3f CPS)\n\r", benchStart, 1/benchStart);
 #endif
 
 #ifdef TLS_BENCH_MODE
@@ -400,7 +400,7 @@ int TPM2_TLS_Server(void* userCtx)
             msgSz = rc;
         #ifdef TLS_BENCH_MODE
             benchStart = gettime_secs(0) - benchStart;
-            printf("Read: %d bytes in %9.3f sec (%9.3f KB/sec)\n",
+            xil_printf("Read: %d bytes in %9.3f sec (%9.3f KB/sec)\n\r",
                 msgSz, benchStart, msgSz / benchStart / 1024);
             total_size += msgSz;
         #else
@@ -408,7 +408,7 @@ int TPM2_TLS_Server(void* userCtx)
             if (msgSz >= (int)sizeof(msg))
                 msgSz = (int)sizeof(msg) - 1;
             msg[msgSz] = '\0';
-            printf("Read (%d): %s\n", msgSz, msg);
+            xil_printf("Read (%d): %s\n\r", msgSz, msg);
         #endif
             rc = 0; /* success */
         }
@@ -431,10 +431,10 @@ int TPM2_TLS_Server(void* userCtx)
             msgSz =  rc;
         #ifdef TLS_BENCH_MODE
             benchStart = gettime_secs(0) - benchStart;
-            printf("Write: %d bytes in %9.3f sec (%9.3f KB/sec)\n",
+            xil_printf("Write: %d bytes in %9.3f sec (%9.3f KB/sec)\n\r",
                 msgSz, benchStart, msgSz / benchStart / 1024);
         #else
-            printf("Write (%d): %s\n", msgSz, msg);
+            xil_printf("Write (%d): %s\n\r", msgSz, msg);
         #endif
             rc = 0; /* success */
         }
@@ -443,7 +443,7 @@ int TPM2_TLS_Server(void* userCtx)
 exit:
 
     if (rc != 0) {
-        printf("Failure %d (0x%x): %s\n", rc, rc, wolfTPM2_GetRCString(rc));
+        xil_printf("Failure %d (0x%x): %s\n\r", rc, rc, wolfTPM2_GetRCString(rc));
     }
 
     wolfSSL_shutdown(ssl);

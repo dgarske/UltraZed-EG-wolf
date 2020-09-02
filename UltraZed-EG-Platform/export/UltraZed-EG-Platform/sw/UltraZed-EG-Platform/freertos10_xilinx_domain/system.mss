@@ -12,7 +12,7 @@ BEGIN OS
  PARAMETER stdin = psu_uart_0
  PARAMETER stdout = psu_uart_0
  PARAMETER tick_rate = 1000
- PARAMETER total_heap_size = 200000
+ PARAMETER total_heap_size = 400000
 END
 
 

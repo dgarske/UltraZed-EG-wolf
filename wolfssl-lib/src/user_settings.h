@@ -66,7 +66,7 @@
 #define USE_FAST_MATH
 #define FP_MAX_BITS (4096 * 2) /* Max RSA 4096-bit */
 
-/* Use Single Precision assembly math speedups for ECC */
+/* Use Single Precision assembly math speedups for RSA, ECC and DH */
 #define WOLFSSL_SP
 #define WOLFSSL_SP_ASM
 #define WOLFSSL_SP_ARM64_ASM
@@ -79,8 +79,8 @@
 
 /* Random: HashDRGB / P-RNG (SHA256) */
 #define HAVE_HASHDRBG
-extern unsigned char my_rng_seed_gen(void);
-#define CUSTOM_RAND_GENERATE  my_rng_seed_gen
+extern int my_rng_gen_seed(unsigned char* output, unsigned int sz);
+#define CUSTOM_RAND_GENERATE_SEED  my_rng_seed_gen
 
 /* Override Current Time */
 /* Allows custom "custom_time()" function to be used for benchmark */
@@ -101,6 +101,7 @@ extern unsigned long my_time(unsigned long* timer);
 /* ECC */
 #define HAVE_ECC
 #define ECC_SHAMIR
+#define ECC_USER_CURVES /* SECP256R1 on by default */
 #define HAVE_ECC384
 
 /* DH */

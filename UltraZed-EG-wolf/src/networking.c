@@ -241,39 +241,39 @@ int SockIORecv(WOLFSSL* ssl, char* buff, int sz, void* ctx)
     if ((recvd = (int)recv(sockCtx->fd, buff, sz, 0)) == -1) {
         /* error encountered. Be responsible and report it in wolfSSL terms */
 
-        printf("IO RECEIVE ERROR: ");
+        xil_printf("IO RECEIVE ERROR: ");
         switch (errno) {
     #if EAGAIN != EWOULDBLOCK
         case EAGAIN: /* EAGAIN == EWOULDBLOCK on some systems, but not others */
     #endif
         case EWOULDBLOCK:
             if (wolfSSL_get_using_nonblock(ssl)) {
-                printf("would block\n");
+                xil_printf("would block\n\r");
                 return WOLFSSL_CBIO_ERR_WANT_READ;
             }
             else {
-                printf("socket timeout\n");
+                xil_printf("socket timeout\n\r");
                 return WOLFSSL_CBIO_ERR_TIMEOUT;
             }
         case ECONNRESET:
-            printf("connection reset\n");
+            xil_printf("connection reset\n\r");
             return WOLFSSL_CBIO_ERR_CONN_RST;
         case EINTR:
-            printf("socket interrupted\n");
+            xil_printf("socket interrupted\n\r");
             return WOLFSSL_CBIO_ERR_ISR;
         case ECONNREFUSED:
-            printf("connection refused\n");
+            xil_printf("connection refused\n\r");
             return WOLFSSL_CBIO_ERR_WANT_READ;
         case ECONNABORTED:
-            printf("connection aborted\n");
+            xil_printf("connection aborted\n\r");
             return WOLFSSL_CBIO_ERR_CONN_CLOSE;
         default:
-            printf("general error\n");
+            xil_printf("general error\n\r");
             return WOLFSSL_CBIO_ERR_GENERAL;
         }
     }
     else if (recvd == 0) {
-        printf("Connection closed\n");
+        xil_printf("Connection closed\n\r");
         return WOLFSSL_CBIO_ERR_CONN_CLOSE;
     }
 
@@ -288,7 +288,7 @@ int SockIORecv(WOLFSSL* ssl, char* buff, int sz, void* ctx)
 
 #ifdef DEBUG_WOLFTPM
     /* successful receive */
-    printf("SockIORecv: received %d bytes from %d\n", sz, sockCtx->fd);
+    xil_printf("SockIORecv: received %d bytes from %d\n\r", sz, sockCtx->fd);
 #endif
 
     return recvd;
@@ -305,36 +305,36 @@ int SockIOSend(WOLFSSL* ssl, char* buff, int sz, void* ctx)
     if ((sent = (int)send(sockCtx->fd, buff, sz, 0)) == -1) {
         /* error encountered. Be responsible and report it in wolfSSL terms */
 
-        printf("IO SEND ERROR: ");
+        xil_printf("IO SEND ERROR: ");
         switch (errno) {
     #if EAGAIN != EWOULDBLOCK
         case EAGAIN: /* EAGAIN == EWOULDBLOCK on some systems, but not others */
     #endif
         case EWOULDBLOCK:
-            printf("would block\n");
+            xil_printf("would block\n\r");
             return WOLFSSL_CBIO_ERR_WANT_READ;
         case ECONNRESET:
-            printf("connection reset\n");
+            xil_printf("connection reset\n\r");
             return WOLFSSL_CBIO_ERR_CONN_RST;
         case EINTR:
-            printf("socket interrupted\n");
+            xil_printf("socket interrupted\n\r");
             return WOLFSSL_CBIO_ERR_ISR;
         case EPIPE:
-            printf("socket EPIPE\n");
+            xil_printf("socket EPIPE\n\r");
             return WOLFSSL_CBIO_ERR_CONN_CLOSE;
         default:
-            printf("general error\n");
+            xil_printf("general error\n\r");
             return WOLFSSL_CBIO_ERR_GENERAL;
         }
     }
     else if (sent == 0) {
-        printf("Connection closed\n");
+        xil_printf("Connection closed\n\r");
         return 0;
     }
 
 #ifdef DEBUG_WOLFTPM
     /* successful send */
-    printf("SockIOSend: sent %d bytes to %d\n", sz, sockCtx->fd);
+    xil_printf("SockIOSend: sent %d bytes to %d\n\r", sz, sockCtx->fd);
 #endif
 
     return sent;
@@ -355,25 +355,25 @@ int SetupSocketAndListen(SockIoCbCtx* sockIoCtx, word32 port)
      * Sets the socket to be stream based (TCP),
      * 0 means choose the default protocol. */
     if ((sockIoCtx->listenFd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        printf("ERROR: failed to create the socket\n");
+        xil_printf("ERROR: failed to create the socket\n\r");
         return -1;
     }
 
     /* allow reuse */
     if (setsockopt(sockIoCtx->listenFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-        printf("setsockopt SO_REUSEADDR failed\n");
+        xil_printf("setsockopt SO_REUSEADDR failed\n\r");
         return -1;
     }
 
     /* Connect to the server */
     if (bind(sockIoCtx->listenFd, (struct sockaddr*)&servAddr,
                                                     sizeof(servAddr)) == -1) {
-        printf("ERROR: failed to bind\n");
+        xil_printf("ERROR: failed to bind\n\r");
         return -1;
     }
 
     if (listen(sockIoCtx->listenFd, 5) != 0) {
-        printf("ERROR: failed to listen\n");
+        xil_printf("ERROR: failed to listen\n\r");
         return -1;
     }
 
@@ -387,7 +387,7 @@ int SocketWaitClient(SockIoCbCtx* sockIoCtx)
     socklen_t          size = sizeof(clientAddr);
 
     if ((connd = accept(sockIoCtx->listenFd, (struct sockaddr*)&clientAddr, &size)) == -1) {
-        printf("ERROR: failed to accept the connection\n\n");
+        xil_printf("ERROR: failed to accept the connection\n\n\r");
         return -1;
     }
     sockIoCtx->fd = connd;
@@ -424,14 +424,14 @@ int SetupSocketAndConnect(SockIoCbCtx* sockIoCtx, const char* host,
      * Sets the socket to be stream based (TCP),
      * 0 means choose the default protocol. */
     if ((sockIoCtx->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        printf("ERROR: failed to create the socket\n");
+        xil_printf("ERROR: failed to create the socket\n\r");
         return -1;
     }
 
     /* Connect to the server */
     if (connect(sockIoCtx->fd, (struct sockaddr*)&servAddr,
                                                     sizeof(servAddr)) == -1) {
-        printf("ERROR: failed to connect\n");
+        xil_printf("ERROR: failed to connect\n\r");
         return -1;
     }
 
