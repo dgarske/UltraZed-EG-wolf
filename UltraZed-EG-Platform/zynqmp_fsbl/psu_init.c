@@ -12877,12 +12877,12 @@ unsigned long psu_mio_init_data(void)
     *  Output, ttc0_wave_out- (TTC Waveform Clock) 6= ua0, Output, ua0_txd- (U
     * ART transmitter serial output) 7= trace, Output, trace_ctl- (Trace Port
     * Control Signal)
-    *  PSU_IOU_SLCR_MIO_PIN_39_L3_SEL                              4
+    *  PSU_IOU_SLCR_MIO_PIN_39_L3_SEL                              0
 
     * Configures MIO Pin 39 peripheral interface mapping
-    * (OFFSET, MASK, VALUE)      (0XFF18009C, 0x000000FEU ,0x00000080U)
+    * (OFFSET, MASK, VALUE)      (0XFF18009C, 0x000000FEU ,0x00000000U)
     */
-	PSU_Mask_Write(IOU_SLCR_MIO_PIN_39_OFFSET, 0x000000FEU, 0x00000080U);
+	PSU_Mask_Write(IOU_SLCR_MIO_PIN_39_OFFSET, 0x000000FEU, 0x00000000U);
 /*##################################################################### */
 
     /*
@@ -12908,12 +12908,12 @@ unsigned long psu_mio_init_data(void)
     * TAG TDO) 4= spi0, Output, spi0_n_ss_out[1]- (SPI Master Selects) 5= ttc3
     * , Input, ttc3_clk_in- (TTC Clock) 6= ua1, Output, ua1_txd- (UART transmi
     * tter serial output) 7= trace, Output, tracedq[0]- (Trace Port Databus)
-    *  PSU_IOU_SLCR_MIO_PIN_40_L3_SEL                              4
+    *  PSU_IOU_SLCR_MIO_PIN_40_L3_SEL                              0
 
     * Configures MIO Pin 40 peripheral interface mapping
-    * (OFFSET, MASK, VALUE)      (0XFF1800A0, 0x000000FEU ,0x00000080U)
+    * (OFFSET, MASK, VALUE)      (0XFF1800A0, 0x000000FEU ,0x00000000U)
     */
-	PSU_Mask_Write(IOU_SLCR_MIO_PIN_40_OFFSET, 0x000000FEU, 0x00000080U);
+	PSU_Mask_Write(IOU_SLCR_MIO_PIN_40_OFFSET, 0x000000FEU, 0x00000000U);
 /*##################################################################### */
 
     /*
