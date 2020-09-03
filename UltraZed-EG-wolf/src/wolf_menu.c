@@ -28,6 +28,7 @@
 #include "xil_printf.h"
 #include "xparameters.h"
 #include "xuartps_hw.h"
+#include "sleep.h" /* for usleep() used for network startup wait */
 
 #include "wolfssl/wolfcrypt/settings.h"
 #include "wolfssl/ssl.h"
@@ -37,6 +38,7 @@
 
 #include "wolftpm/tpm2_wrap.h"
 
+#include "tpm_io.h"
 #include "tpm_csr.h"
 #include "tpm_timestamp.h"
 #include "tpm_timeset.h"
@@ -64,7 +66,8 @@ static const char menu1[] = "\r\n"
 		"\tr. TPM Generate Certificate Signing Request (CSR)\r\n"
 		"\tg. TPM Get/Set Time\r\n"
 		"\tp. TPM Signed Timestamp\r\n"
-		"\tv. Certification Chain Validate Test\r\n";
+		"\tv. Certification Chain Validate Test\r\n"
+		"\tl. TPM Clear (reset TPM)\r\n";
 
 static char get_stdin_char(void)
 {
@@ -73,6 +76,7 @@ static char get_stdin_char(void)
 
 void wolfmenu_thread(void* p)
 {
+	int rc;
 	uint8_t cmd;
 	func_args args;
 	(void)p;
@@ -161,6 +165,17 @@ void wolfmenu_thread(void* p)
 		case 'v':
 			args.return_code = VerifyCert_Test();
 			break;
+		case 'l':
+		{
+			WOLFTPM2_DEV dev;
+			rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
+			if (rc == 0) {
+				wolfTPM2_Clear(&dev);
+				wolfTPM2_Cleanup(&dev);
+			}
+
+			break;
+		}
 		default:
 			xil_printf("\n\rSelection out of range\r\n");
 			break;

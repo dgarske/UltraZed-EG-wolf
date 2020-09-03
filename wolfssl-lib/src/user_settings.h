@@ -62,6 +62,10 @@
 //#define WOLFSSL_ARMASM
 //#define WOLFSSL_XILINX_CRYPT /* Xilinx hardware acceleration */
 
+/* TPM Options */
+#define WOLFTPM2_USE_SW_ECDHE /* Compute shared secret in software */
+#define TPM_TIMEOUT_TRIES 10000000
+
 /* Math */
 #define USE_FAST_MATH
 #define FP_MAX_BITS (4096 * 2) /* Max RSA 4096-bit */
@@ -154,8 +158,9 @@ extern unsigned long my_time(unsigned long* timer);
 #define USE_CERT_BUFFERS_2048
 
 /* Debugging */
-#if 0
+#if 1
 	#define DEBUG_WOLFSSL
+	#define DEBUG_WOLFTPM
 #endif
 
 #endif /* SRC_USER_SETTINGS_H_ */

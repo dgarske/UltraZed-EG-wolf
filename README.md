@@ -189,6 +189,139 @@ Generic Steps:
 
 (Note if error -1303 comes up from when running the image, just restart the board. It is because the time was not set yet)
 
+
+## Demo
+
+```
+Xilinx Zynq MP First Stage Boot Loader 
+
+Release 2020.1   Sep  3 2020  -  12:08:27
+PMU-FW is not running, certain applications may not be supported.
+
+Demonstrating wolfSSL software implementation
+Waiting for network to start
+Start PHY autonegotiation 
+Waiting for PHY to complete autonegotiation.
+autonegotiation complete 
+link speed for phy address 9: 1000
+DHCP request success
+Board IP: 192.168.0.168
+Netmask : 255.255.255.0
+Gateway : 192.168.0.1
+
+
+				MENU
+
+	t. wolfCrypt Test
+	b. wolfCrypt Benchmark
+	s. wolfSSL TLS Server
+	c. wolfSSL TLS Client
+	e. Xilinx TCP Echo Server
+	r. TPM Generate Certificate Signing Request (CSR)
+	g. TPM Get/Set Time
+	p. TPM Signed Timestamp
+	v. Certification Chain Validate Test
+Please select one of the above options:
+
+t
+Running wolfCrypt Tests...
+------------------------------------------------------------------------------
+ wolfSSL version 4.5.0
+------------------------------------------------------------------------------
+error    test passed!
+MEMORY   test passed!
+base64   test passed!
+asn      test passed!
+RANDOM   test passed!
+SHA-256  test passed!
+SHA-384  test passed!
+SHA-512  test passed!
+SHA-3    test passed!
+Hash     test passed!
+HMAC-SHA256 test passed!
+HMAC-SHA384 test passed!
+HMAC-SHA512 test passed!
+HMAC-SHA3   test passed!
+HMAC-KDF    test passed!
+GMAC     test passed!
+Chacha   test passed!
+POLY1305 test passed!
+ChaCha20-Poly1305 AEAD test passed!
+AES      test passed!
+AES192   test passed!
+AES256   test passed!
+AES-GCM  test passed!
+RSA      test passed!
+PWDBASED test passed!
+ECC      test passed!
+ECC buffer test passed!
+logging  test passed!
+mutex    test passed!
+crypto callback test passed!
+Test complete
+Crypt Test: Return code 0
+Return code 0
+
+b
+Running wolfCrypt Benchmarks...
+------------------------------------------------------------------------------
+ wolfSSL version 4.5.0
+------------------------------------------------------------------------------
+wolfCrypt Benchmark (block bytes 1024, min  sec each)
+RNG                  1 MB took 1.016 seconds,    1.370 MB/s
+AES-128-GCM-enc      1 MB took 1.013 seconds,    1.374 MB/s
+AES-128-GCM-dec      1 MB took 1.014 seconds,    1.372 MB/s
+AES-192-GCM-enc      1 MB took 1.003 seconds,    1.314 MB/s
+AES-192-GCM-dec      1 MB took 1.003 seconds,    1.314 MB/s
+AES-256-GCM-enc      1 MB took 1.002 seconds,    1.267 MB/s
+AES-256-GCM-dec      1 MB took 1.004 seconds,    1.264 MB/s
+CHACHA               6 MB took 1.001 seconds,    5.683 MB/s
+CHA-POLY             4 MB took 1.003 seconds,    4.284 MB/s
+POLY1305            24 MB took 1.000 seconds,   24.097 MB/s
+SHA-256              3 MB took 1.003 seconds,    3.164 MB/s
+SHA-384              7 MB took 1.002 seconds,    7.163 MB/s
+SHA-512              7 MB took 1.001 seconds,    7.171 MB/s
+SHA3-224             8 MB took 1.001 seconds,    7.780 MB/s
+SHA3-256             7 MB took 1.002 seconds,    7.358 MB/s
+SHA3-384             6 MB took 1.003 seconds,    5.720 MB/s
+SHA3-512             4 MB took 1.000 seconds,    4.028 MB/s
+HMAC-SHA256          3 MB took 1.003 seconds,    3.140 MB/s
+HMAC-SHA384          7 MB took 1.000 seconds,    7.056 MB/s
+HMAC-SHA512          7 MB took 1.000 seconds,    7.056 MB/s
+PBKDF2             416 bytes took 1.034 seconds,  402.321 bytes/s
+RSA     2048 public       1934 ops took 1.000 sec, avg 0.517 ms, 1934.000 ops/sec
+RSA     2048 private       102 ops took 1.017 sec, avg 9.971 ms, 100.295 ops/sec
+ECC      256 key gen      1445 ops took 1.000 sec, avg 0.692 ms, 1445.000 ops/sec
+ECDHE    256 agree         880 ops took 1.000 sec, avg 1.136 ms, 880.000 ops/sec
+ECDSA    256 sign         1256 ops took 1.000 sec, avg 0.796 ms, 1256.000 ops/sec
+ECDSA    256 verify       1050 ops took 1.001 sec, avg 0.953 ms, 1048.951 ops/sec
+Benchmark complete
+Return code 0
+
+g
+TPM2 Demo of setting the TPM clock forward
+TPM2_ReadClock: success
+TPM2_ClockSet: success
+TPM2_ReadClock: success
+
+	 oldClock=39792062 
+	 newClock=39842024 
+
+Return code 0
+
+v
+
+Verification successful on cert1!
+------------------------------------------------------------
+
+Verification successful on cert2!
+------------------------------------------------------------
+
+Return code 0
+
+```
+
+
 ## Support
 
 For questions email support@wolfssl.com.

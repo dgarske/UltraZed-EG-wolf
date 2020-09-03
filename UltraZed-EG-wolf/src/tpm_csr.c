@@ -197,10 +197,12 @@ int TPM2_CSR_Example(void* userCtx)
     }
 
 #ifndef NO_RSA
-    /* Create/Load RSA key for CSR (AIK) */
+    /* Create/Load RSA key for CSR */
     rc = wolfTPM2_ReadPublicKey(&dev, &rsaKey, TPM2_DEMO_RSA_KEY_HANDLE);
     if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_RSA_AIK(&publicTemplate);
+        rc = wolfTPM2_GetKeyTemplate_RSA(&publicTemplate,
+            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
+            TPMA_OBJECT_decrypt | TPMA_OBJECT_sign | TPMA_OBJECT_noDA);
         if (rc != 0) goto exit;
         rc = wolfTPM2_CreateAndLoadKey(&dev, &rsaKey, &storageKey.handle,
             &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
@@ -230,10 +232,13 @@ int TPM2_CSR_Example(void* userCtx)
 
 
 #ifdef HAVE_ECC
-    /* Create/Load ECC key for CSR (AIK) */
+    /* Create/Load ECC key for CSR */
     rc = wolfTPM2_ReadPublicKey(&dev, &eccKey, TPM2_DEMO_ECC_KEY_HANDLE);
     if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_ECC_AIK(&publicTemplate);
+        rc = wolfTPM2_GetKeyTemplate_ECC(&publicTemplate,
+            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
+            TPMA_OBJECT_sign | TPMA_OBJECT_noDA,
+            TPM_ECC_NIST_P256, TPM_ALG_ECDSA);
         if (rc != 0) goto exit;
         rc = wolfTPM2_CreateAndLoadKey(&dev, &eccKey, &storageKey.handle,
             &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);

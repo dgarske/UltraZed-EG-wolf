@@ -43,10 +43,10 @@
 
 /* TLS Configuration */
 #ifndef TLS_HOST
-    #define TLS_HOST "localhost"
+    #define TLS_HOST "www.google.com"
 #endif
 #ifndef TLS_PORT
-    #define TLS_PORT 11111
+    #define TLS_PORT 443
 #endif
 
 #ifndef MAX_MSG_SZ

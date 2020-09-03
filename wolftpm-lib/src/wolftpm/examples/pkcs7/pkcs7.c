@@ -348,10 +348,12 @@ int TPM2_PKCS7_Example(void* userCtx)
             storageKey.handle.auth.size);
     }
 
-    /* Create/Load RSA key for PKCS7 signing (AIK) */
+    /* Create/Load RSA key for PKCS7 signing */
     rc = wolfTPM2_ReadPublicKey(&dev, &rsaKey, TPM2_DEMO_RSA_KEY_HANDLE);
     if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_RSA_AIK(&publicTemplate);
+        rc = wolfTPM2_GetKeyTemplate_RSA(&publicTemplate,
+            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
+            TPMA_OBJECT_decrypt | TPMA_OBJECT_sign | TPMA_OBJECT_noDA);
         if (rc != 0) goto exit;
         rc = wolfTPM2_CreateAndLoadKey(&dev, &rsaKey, &storageKey.handle,
             &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
@@ -363,10 +365,11 @@ int TPM2_PKCS7_Example(void* userCtx)
         if (rc != 0) goto exit;
     }
     else {
-        /* specify auth password for RSA key */
+        /* specify auth password for rsa key */
         rsaKey.handle.auth.size = sizeof(gKeyAuth)-1;
         XMEMCPY(rsaKey.handle.auth.buffer, gKeyAuth, rsaKey.handle.auth.size);
     }
+
 
     /* load DER certificate for TPM key (obtained by running
         `./examples/csr/csr` and `./certs/certreq.sh`) */
@@ -424,8 +427,8 @@ int main(void)
     (defined(WOLF_CRYPTO_DEV) || defined(WOLF_CRYPTO_CB))
     rc = TPM2_PKCS7_Example(NULL);
 #else
-    printf("Wrapper/PKCS7/CryptoDev code not compiled in\n");
-    printf("Build wolfssl with ./configure --enable-pkcs7 --enable-cryptodev\n");
+    printf("Wrapper/PKCS7/CryptoCb code not compiled in\n");
+    printf("Build wolfssl with ./configure --enable-pkcs7 --enable-cryptocb\n");
 #endif
 
     return rc;
