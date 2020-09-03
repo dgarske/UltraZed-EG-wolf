@@ -42,6 +42,7 @@
 #include "tpm_timeset.h"
 #include "tls_client.h"
 #include "tls_server.h"
+#include "cert_verify.h"
 int echo_application(void);
 int network_ready; /* global variable in networking.c */
 
@@ -62,7 +63,8 @@ static const char menu1[] = "\n\r"
 		"\te. Xilinx TCP Echo Server\n\r"
 		"\tr. TPM Generate Certificate Signing Request (CSR)\n\r"
 		"\tg. TPM Get/Set Time\n\r"
-		"\tp. TPM Signed Timestamp\n\r";
+		"\tp. TPM Signed Timestamp\n\r"
+		"\tv. Certification Chain Validate Test\n\r";
 
 static char get_stdin_char(void)
 {
@@ -96,11 +98,16 @@ void wolfmenu_thread(void* p)
 	xil_printf("Demonstrating wolfSSL software implementation\n\r");
 #endif
 
+	xil_printf("Waiting for network to start\n\r");
+	while (!network_ready) {
+		usleep(1000);
+	}
+
 	while (1) {
         memset(&args, 0, sizeof(args));
         args.return_code = NOT_COMPILED_IN; /* default */
 
-		xil_printf("\n\t\t\t\tMENU\n\r");
+		xil_printf("\n\r\t\t\t\tMENU\n\r");
 		xil_printf(menu1);
 		xil_printf("Please select one of the above options:\n\r");
 
@@ -127,37 +134,20 @@ void wolfmenu_thread(void* p)
 			break;
 
 		case 's':
-			if (!network_ready) {
-				xil_printf("Networking not started\n\r");
-				break;
-			}
-			xil_printf("Starting TLS Server\n\r");
 			args.return_code = TPM2_TLS_Server(NULL);
 			break;
 		case 'c':
-			if (!network_ready) {
-				xil_printf("Networking not started\n\r");
-				break;
-			}
-			xil_printf("Starting TLS Client\n\r");
 			args.return_code = TPM2_TLS_Client(NULL);
 			break;
 		case 'e':
-			if (!network_ready) {
-				xil_printf("Networking not started\n\r");
-				break;
-			}
-			xil_printf("Xilinx Echo Server Example\n\r");
 			args.return_code = echo_application();
 			break;
 		case 'r':
-			xil_printf("TPM CSR Example\n\r");
 			args.return_code = TPM2_CSR_Example(NULL);
 			break;
 		case 'g':
 		{
 			UINT64 clockOut = 0;
-			xil_printf("TPM Get/Set Time Example\n\r");
 			args.return_code = TPM2_ClockGet_Example(NULL, &clockOut);
 			if (args.return_code == 0) {
 				clockOut += (50 * 1000); /* advance 50 seconds */
@@ -166,11 +156,13 @@ void wolfmenu_thread(void* p)
 			break;
 		}
 		case 'p':
-			xil_printf("TPM Signed Timestamp Example\n\r");
 			args.return_code = TPM2_Timestamp_Test(NULL);
 			break;
+		case 'v':
+			args.return_code = VerifyCert_Test();
+			break;
 		default:
-			xil_printf("\nSelection out of range\n\r");
+			xil_printf("\n\rSelection out of range\n\r");
 			break;
 		}
 
