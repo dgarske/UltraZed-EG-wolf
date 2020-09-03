@@ -73,13 +73,13 @@ int TPM2_Timestamp_Test(void* userCtx)
     XMEMSET(&storage, 0, sizeof(storage));
     XMEMSET(&rsaKey, 0, sizeof(rsaKey));
 
-    xil_printf("TPM2 Demo of generating signed timestamp from the TPM\n\r");
+    xil_printf("TPM2 Demo of generating signed timestamp from the TPM\r\n");
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("wolfTPM2_Init failed 0x%x: %s\n\r", rc, TPM2_GetRCString(rc));
+        xil_printf("wolfTPM2_Init failed 0x%x: %s\r\n", rc, TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("wolfTPM2_Init: success\n\r");
+    xil_printf("wolfTPM2_Init: success\r\n");
 
 
     /* Define the default session auth that has NULL password */
@@ -93,21 +93,21 @@ int TPM2_Timestamp_Test(void* userCtx)
     XMEMSET(&cmdOut.readClock, 0, sizeof(cmdOut.readClock));
     rc = TPM2_ReadClock(&cmdOut.readClock);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_ReadClock failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_ReadClock failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("TPM2_ReadClock: success\n\r");
+    xil_printf("TPM2_ReadClock: success\r\n");
 
 
     /* Create Endorsement Key, also called EK */
     rc = wolfTPM2_CreateEK(&dev, &endorse, TPM_ALG_RSA);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("wolfTPM2_CreateEK: Endorsement failed 0x%x: %s\n\r",
+        xil_printf("wolfTPM2_CreateEK: Endorsement failed 0x%x: %s\r\n",
             rc, TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("wolfTPM2_CreateEK: Endorsement 0x%x (%d bytes)\n\r",
+    xil_printf("wolfTPM2_CreateEK: Endorsement 0x%x (%d bytes)\r\n",
         (word32)endorse.handle.hndl, endorse.pub.size);
 
 
@@ -136,7 +136,7 @@ int TPM2_Timestamp_Test(void* userCtx)
             goto exit;
         }
 
-        xil_printf("Created new RSA Primary Storage Key at 0x%x\n\r",
+        xil_printf("Created new RSA Primary Storage Key at 0x%x\r\n",
             TPM2_DEMO_STORAGE_KEY_HANDLE);
     }
     else {
@@ -146,11 +146,11 @@ int TPM2_Timestamp_Test(void* userCtx)
             storage.handle.auth.size);
     }
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("wolfTPM2_CreateSRK: Storage failed 0x%x: %s\n\r", rc,
+        xil_printf("wolfTPM2_CreateSRK: Storage failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("wolfTPM2_CreateSRK: Storage 0x%x (%d bytes)\n\r",
+    xil_printf("wolfTPM2_CreateSRK: Storage 0x%x (%d bytes)\r\n",
         (word32)storage.handle.hndl, storage.pub.size);
 
 
@@ -165,18 +165,18 @@ int TPM2_Timestamp_Test(void* userCtx)
     rc = TPM2_GetNonce(cmdIn.authSes.nonceCaller.buffer,
                        cmdIn.authSes.nonceCaller.size);
     if (rc < 0) {
-        xil_printf("TPM2_GetNonce failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_GetNonce failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
     rc = TPM2_StartAuthSession(&cmdIn.authSes, &cmdOut.authSes);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_StartAuthSession failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_StartAuthSession failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
     sessionHandle = cmdOut.authSes.sessionHandle;
-    xil_printf("TPM2_StartAuthSession: sessionHandle 0x%x\n\r", (word32)sessionHandle);
+    xil_printf("TPM2_StartAuthSession: sessionHandle 0x%x\r\n", (word32)sessionHandle);
 
 
     /* Set PolicySecret for our session to enable use of the Endorsement Hierarchy */
@@ -185,10 +185,10 @@ int TPM2_Timestamp_Test(void* userCtx)
     cmdIn.policySecret.policySession = sessionHandle;
     rc = TPM2_PolicySecret(&cmdIn.policySecret, &cmdOut.policySecret);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("policySecret failed 0x%x: %s\n\r", rc, TPM2_GetRCString(rc));
+        xil_printf("policySecret failed 0x%x: %s\r\n", rc, TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("TPM2_policySecret success\n\r"); /* No use of the output */
+    xil_printf("TPM2_policySecret success\r\n"); /* No use of the output */
 
 
     /* At this stage, the EK is created and NULL password has already been set
@@ -221,7 +221,7 @@ int TPM2_Timestamp_Test(void* userCtx)
         rsaKey.handle.auth.size = sizeof(gKeyAuth)-1;
         XMEMCPY(rsaKey.handle.auth.buffer, gKeyAuth, rsaKey.handle.auth.size);
     }
-    xil_printf("wolfTPM2_CreateAndLoadAIK: AIK 0x%x (%d bytes)\n\r",
+    xil_printf("wolfTPM2_CreateAndLoadAIK: AIK 0x%x (%d bytes)\r\n",
         (word32)rsaKey.handle.hndl, rsaKey.pub.size);
 
 
@@ -243,47 +243,47 @@ int TPM2_Timestamp_Test(void* userCtx)
     /* Get signed by the TPM timestamp using the AIK key */
     rc = wolfTPM2_GetTime(&rsaKey, &cmdOut.getTime);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("wolfTPM2_GetTime failed 0x%x: %s\n\r", rc,
+        xil_printf("wolfTPM2_GetTime failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("wolfTPM2_GetTime: success\n\r");
+    xil_printf("wolfTPM2_GetTime: success\r\n");
 
     rc = TPM2_ParseAttest(&cmdOut.getTime.timeInfo, &attestedData);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_Packet_ParseAttest failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_Packet_ParseAttest failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
     if (attestedData.magic != TPM_GENERATED_VALUE) {
-        xil_printf("\tError, attested data not generated by the TPM = 0x%X\n\r",
+        xil_printf("\tError, attested data not generated by the TPM = 0x%X\r\n",
             attestedData.magic);
     }
 
-    xil_printf("TPM with signature attests (type 0x%x):\n\r", attestedData.type);
+    xil_printf("TPM with signature attests (type 0x%x):\r\n", attestedData.type);
     /* time value in milliseconds that advances while the TPM is powered */
-    xil_printf("\tTPM uptime since last power-up(in ms): %lu\n\r",
+    xil_printf("\tTPM uptime since last power-up(in ms): %lu\r\n",
         (unsigned long)attestedData.attested.time.time.time);
     /* time value in milliseconds that advances while the TPM is powered */
-    xil_printf("\tTPM clock, total time the TPM has been on(in ms): %lu\n\r",
+    xil_printf("\tTPM clock, total time the TPM has been on(in ms): %lu\r\n",
         (unsigned long)attestedData.attested.time.time.clockInfo.clock);
     /* number of occurrences of TPM Reset since the last TPM2_Clear() */
-    xil_printf("\tReset Count: %u\n\r",
+    xil_printf("\tReset Count: %u\r\n",
         attestedData.attested.time.time.clockInfo.resetCount);
     /* number of times that TPM2_Shutdown() or _TPM_Hash_Start have occurred since the last TPM Reset or TPM2_Clear(). */
-    xil_printf("\tRestart Count: %u\n\r",
+    xil_printf("\tRestart Count: %u\r\n",
         attestedData.attested.time.time.clockInfo.restartCount);
     /* This parameter is set to YES when the value reported in Clock is guaranteed to be unique for the current Owner */
-    xil_printf("\tClock Safe: %u\n\r",
+    xil_printf("\tClock Safe: %u\r\n",
         attestedData.attested.time.time.clockInfo.safe);
     /* a TPM vendor-specific value indicating the version number of the firmware */
-    xil_printf("\tFirmware Version(vendor specific): 0x%lX\n\r",
+    xil_printf("\tFirmware Version(vendor specific): 0x%lX\r\n",
         (unsigned long)attestedData.attested.time.firmwareVersion);
 
 exit:
 
     if (rc != 0) {
-        xil_printf("Failure 0x%x: %s\n\r", rc, wolfTPM2_GetRCString(rc));
+        xil_printf("Failure 0x%x: %s\r\n", rc, wolfTPM2_GetRCString(rc));
     }
 
     /* Close session */

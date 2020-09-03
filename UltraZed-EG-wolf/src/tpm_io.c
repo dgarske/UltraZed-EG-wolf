@@ -219,7 +219,7 @@ static int TPM2_IoCb_Xilinx_SPI(TPM2_CTX* ctx, const byte* txBuf,
                 break;
         } while (ret == TPM_RC_SUCCESS && --timeout > 0);
     #ifdef WOLFTPM_DEBUG_TIMEOUT
-        xil_printf("SPI Ready Wait %d\n\r", TPM_SPI_WAIT_RETRY - timeout);
+        xil_printf("SPI Ready Wait %d\r\n", TPM_SPI_WAIT_RETRY - timeout);
     #endif
         if (timeout <= 0) {
             XSpiPs_SetSlaveSelect(&SpiInstance, 0xF); /* deselect CS (set high) */
@@ -268,10 +268,10 @@ int TPM2_IoCb(TPM2_CTX* ctx, int isRead, word32 addr, byte* buf, word16 size,
     byte rxBuf[MAX_SPI_FRAMESIZE+TPM_TIS_HEADER_SZ];
 
 #ifdef WOLFTPM_DEBUG_IO
-    xil_printf("TPM2_IoCb (Adv): Read %d, Addr %x, Size %d\n\r",
+    xil_printf("TPM2_IoCb (Adv): Read %d, Addr %x, Size %d\r\n",
         isRead ? 1 : 0, addr, size);
     if (!isRead) {
-        xil_printf("Write Size %d\n\r", size);
+        xil_printf("Write Size %d\r\n", size);
         TPM2_PrintBin(buf, size);
     }
 #endif
@@ -302,7 +302,7 @@ int TPM2_IoCb(TPM2_CTX* ctx, int isRead, word32 addr, byte* buf, word16 size,
 
 #ifdef WOLFTPM_DEBUG_IO
     if (isRead) {
-        xil_printf("Read Size %d\n\r", size);
+        xil_printf("Read Size %d\r\n", size);
         TPM2_PrintBin(buf, size);
     }
 #endif
@@ -321,7 +321,7 @@ int TPM2_IoCb(TPM2_CTX* ctx, const byte* txBuf, byte* rxBuf,
     int ret = TPM2_IoCb_SPI(ctx, txBuf, rxBuf, xferSz, userCtx);
 
 #ifdef WOLFTPM_DEBUG_IO
-    xil_printf("TPM2_IoCb: Ret %d, Sz %d\n\r", ret, xferSz);
+    xil_printf("TPM2_IoCb: Ret %d, Sz %d\r\n", ret, xferSz);
     TPM2_PrintBin(txBuf, xferSz);
     TPM2_PrintBin(rxBuf, xferSz);
 #endif

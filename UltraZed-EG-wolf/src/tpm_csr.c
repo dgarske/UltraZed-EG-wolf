@@ -110,8 +110,8 @@ static int TPM2_CSR_Generate(WOLFTPM2_DEV* dev, int key_type, void* wolfKey,
     if (rc <= 0) goto exit;
     output.size = rc;
 
-    printf("Generated/Signed Cert (DER %d, PEM %d)\n\r", der.size, output.size);
-    printf("%s\n\r", (char*)output.buffer);
+    printf("Generated/Signed Cert (DER %d, PEM %d)\r\n", der.size, output.size);
+    printf("%s\r\n", (char*)output.buffer);
 
 #if !defined(NO_FILESYSTEM) && !defined(NO_WRITE_TEMP_FILES)
     {
@@ -151,7 +151,7 @@ int TPM2_CSR_Example(void* userCtx)
     TpmCryptoDevCtx tpmCtx;
     int tpmDevId;
 
-    printf("TPM2 CSR Example\n\r");
+    printf("TPM2 CSR Example\r\n");
 
     /* Init the TPM2 device */
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
@@ -264,7 +264,7 @@ int TPM2_CSR_Example(void* userCtx)
 exit:
 
     if (rc != 0) {
-        printf("Failure 0x%x: %s\n\r", rc, wolfTPM2_GetRCString(rc));
+        printf("Failure 0x%x: %s\r\n", rc, wolfTPM2_GetRCString(rc));
     }
 
 #ifndef NO_RSA

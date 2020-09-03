@@ -188,3 +188,7 @@ Generic Steps:
 4) put the files created in wolfssl-examples/Xilinx/FreeRTOS/wolfcrypt_test/bootimage/ onto an SD card and run it on the board
 
 (Note if error -1303 comes up from when running the image, just restart the board. It is because the time was not set yet)
+
+## Support
+
+For questions email support@wolfssl.com.

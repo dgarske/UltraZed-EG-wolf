@@ -109,7 +109,7 @@ int IicPhyReset(void)
 	/* Wait until bus is idle */
 	while (XIicPs_BusIsBusy(&I2c0InstancePtr));
 
-	xil_printf("IIC PHY reset on ZCU102 successful \n\r");
+	xil_printf("IIC PHY reset on ZCU102 successful \r\n");
 }
 #endif
 #endif

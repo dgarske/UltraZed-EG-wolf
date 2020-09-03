@@ -49,10 +49,15 @@ static int hw_get_time_sec(void)
     con = XRtcPsu_LookupConfig(XPAR_XRTCPSU_0_DEVICE_ID);
     if (con != NULL) {
         if (XRtcPsu_CfgInitialize(&rtc, con, con->BaseAddr) == XST_SUCCESS) {
+            time_t compiledUTC = UNIX_TIMESTAMP;
             sec = (time_t)XRtcPsu_GetCurrentTime(&rtc);
+            /* if time has not been set then advance to compiled date/time */
+            if (sec < compiledUTC) {
+                XRtcPsu_SetTime(&rtc, compiledUTC);
+            }
         }
         else {
-            xil_printf("Unable to initialize RTC\n\r");
+            xil_printf("Unable to initialize RTC\r\n");
         }
     }
 

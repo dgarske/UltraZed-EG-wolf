@@ -47,13 +47,13 @@ int TPM2_ClockGet_Example(void* userCtx, UINT64* clockOut)
 
     TPMS_AUTH_COMMAND session[MAX_SESSION_NUM];
 
-    xil_printf("TPM2 Demo of setting the TPM clock forward\n\r");
+    xil_printf("TPM2 Demo of setting the TPM clock forward\r\n");
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("wolfTPM2_Init failed 0x%x: %s\n\r", rc, TPM2_GetRCString(rc));
+        xil_printf("wolfTPM2_Init failed 0x%x: %s\r\n", rc, TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("wolfTPM2_Init: success\n\r");
+    xil_printf("wolfTPM2_Init: success\r\n");
 
 
     /* Define the default session auth that has NULL password */
@@ -67,15 +67,15 @@ int TPM2_ClockGet_Example(void* userCtx, UINT64* clockOut)
     XMEMSET(&cmdOut.readClock, 0, sizeof(cmdOut.readClock));
     rc = TPM2_ReadClock(&cmdOut.readClock);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_ReadClock failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_ReadClock failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("TPM2_ReadClock: success\n\r");
+    xil_printf("TPM2_ReadClock: success\r\n");
 #ifdef DEBUG_WOLFTPM
-    xil_printf("TPM2_ReadClock: (uptime) time=%lu\n\r",
+    xil_printf("TPM2_ReadClock: (uptime) time=%lu\r\n",
             (long unsigned int)cmdOut.readClock.currentTime.time);
-    xil_printf("TPM2_ReadClock: (total)  clock=%lu\n\r",
+    xil_printf("TPM2_ReadClock: (total)  clock=%lu\r\n",
             (long unsigned int)cmdOut.readClock.currentTime.clockInfo.clock);
 #endif
     if (clockOut)
@@ -84,7 +84,7 @@ int TPM2_ClockGet_Example(void* userCtx, UINT64* clockOut)
 exit:
 
     if (rc != 0) {
-        xil_printf("Failure 0x%x: %s\n\r", rc, wolfTPM2_GetRCString(rc));
+        xil_printf("Failure 0x%x: %s\r\n", rc, wolfTPM2_GetRCString(rc));
     }
 
     wolfTPM2_Cleanup(&dev);
@@ -110,13 +110,13 @@ int TPM2_ClockSet_Example(void* userCtx, UINT64* newClock)
 
     UINT64 oldClock;
 
-    xil_printf("TPM2 Demo of setting the TPM clock forward\n\r");
+    xil_printf("TPM2 Demo of setting the TPM clock forward\r\n");
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("wolfTPM2_Init failed 0x%x: %s\n\r", rc, TPM2_GetRCString(rc));
+        xil_printf("wolfTPM2_Init failed 0x%x: %s\r\n", rc, TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("wolfTPM2_Init: success\n\r");
+    xil_printf("wolfTPM2_Init: success\r\n");
 
 
     /* Define the default session auth that has NULL password */
@@ -130,15 +130,15 @@ int TPM2_ClockSet_Example(void* userCtx, UINT64* newClock)
     XMEMSET(&cmdOut.readClock, 0, sizeof(cmdOut.readClock));
     rc = TPM2_ReadClock(&cmdOut.readClock);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_ReadClock failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_ReadClock failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("TPM2_ReadClock: success\n\r");
+    xil_printf("TPM2_ReadClock: success\r\n");
 #ifdef DEBUG_WOLFTPM
-    xil_printf("TPM2_ReadClock: (uptime) time=%lu\n\r",
+    xil_printf("TPM2_ReadClock: (uptime) time=%lu\r\n",
             (long unsigned int)cmdOut.readClock.currentTime.time);
-    xil_printf("TPM2_ReadClock: (total)  clock=%lu\n\r",
+    xil_printf("TPM2_ReadClock: (total)  clock=%lu\r\n",
             (long unsigned int)cmdOut.readClock.currentTime.clockInfo.clock);
 #endif
     oldClock = cmdOut.readClock.currentTime.clockInfo.clock;
@@ -151,36 +151,36 @@ int TPM2_ClockSet_Example(void* userCtx, UINT64* newClock)
         cmdIn.clockSet.newTime = oldClock + 50000;
     rc = TPM2_ClockSet(&cmdIn.clockSet);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_clockSet failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_clockSet failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("TPM2_ClockSet: success\n\r");
+    xil_printf("TPM2_ClockSet: success\r\n");
 
     /* ReadClock to check the new clock time is set */
     XMEMSET(&cmdOut.readClock, 0, sizeof(cmdOut.readClock));
     rc = TPM2_ReadClock(&cmdOut.readClock);
     if (rc != TPM_RC_SUCCESS) {
-        xil_printf("TPM2_ReadClock failed 0x%x: %s\n\r", rc,
+        xil_printf("TPM2_ReadClock failed 0x%x: %s\r\n", rc,
             TPM2_GetRCString(rc));
         goto exit;
     }
-    xil_printf("TPM2_ReadClock: success\n\r");
+    xil_printf("TPM2_ReadClock: success\r\n");
 #ifdef DEBUG_WOLFTPM
-    xil_printf("TPM2_ReadClock: (uptime) time=%lu\n\r",
+    xil_printf("TPM2_ReadClock: (uptime) time=%lu\r\n",
             (long unsigned int)cmdOut.readClock.currentTime.time);
-    xil_printf("TPM2_ReadClock: (total)  clock=%lu\n\r",
+    xil_printf("TPM2_ReadClock: (total)  clock=%lu\r\n",
             (long unsigned int)cmdOut.readClock.currentTime.clockInfo.clock);
 #endif
     *newClock = cmdOut.readClock.currentTime.clockInfo.clock;
 
-    xil_printf("\n\t oldClock=%lu \n\t newClock=%lu \n\n\r", 
+    xil_printf("\n\t oldClock=%lu \n\t newClock=%lu \n\r\n", 
         (long unsigned int)oldClock, (long unsigned int)*newClock);
 
 exit:
 
     if (rc != 0) {
-        xil_printf("Failure 0x%x: %s\n\r", rc, wolfTPM2_GetRCString(rc));
+        xil_printf("Failure 0x%x: %s\r\n", rc, wolfTPM2_GetRCString(rc));
     }
 
     wolfTPM2_Cleanup(&dev);

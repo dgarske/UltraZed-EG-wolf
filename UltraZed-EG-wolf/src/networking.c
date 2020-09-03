@@ -67,7 +67,7 @@ int network_ready = 0;
 void print_ip6(char *msg, ip_addr_t *ip)
 {
 	print(msg);
-	xil_printf(" %x:%x:%x:%x:%x:%x:%x:%x\n\r",
+	xil_printf(" %x:%x:%x:%x:%x:%x:%x:%x\r\n",
 			IP6_ADDR_BLOCK1(&ip->u_addr.ip6),
 			IP6_ADDR_BLOCK2(&ip->u_addr.ip6),
 			IP6_ADDR_BLOCK3(&ip->u_addr.ip6),
@@ -82,7 +82,7 @@ void print_ip6(char *msg, ip_addr_t *ip)
 void print_ip(char *msg, ip_addr_t *ip)
 {
 	xil_printf(msg);
-	xil_printf("%d.%d.%d.%d\n\r", ip4_addr1(ip), ip4_addr2(ip),
+	xil_printf("%d.%d.%d.%d\r\n", ip4_addr1(ip), ip4_addr2(ip),
 			ip4_addr3(ip), ip4_addr4(ip));
 }
 
@@ -248,32 +248,32 @@ int SockIORecv(WOLFSSL* ssl, char* buff, int sz, void* ctx)
     #endif
         case EWOULDBLOCK:
             if (wolfSSL_get_using_nonblock(ssl)) {
-                xil_printf("would block\n\r");
+                xil_printf("would block\r\n");
                 return WOLFSSL_CBIO_ERR_WANT_READ;
             }
             else {
-                xil_printf("socket timeout\n\r");
+                xil_printf("socket timeout\r\n");
                 return WOLFSSL_CBIO_ERR_TIMEOUT;
             }
         case ECONNRESET:
-            xil_printf("connection reset\n\r");
+            xil_printf("connection reset\r\n");
             return WOLFSSL_CBIO_ERR_CONN_RST;
         case EINTR:
-            xil_printf("socket interrupted\n\r");
+            xil_printf("socket interrupted\r\n");
             return WOLFSSL_CBIO_ERR_ISR;
         case ECONNREFUSED:
-            xil_printf("connection refused\n\r");
+            xil_printf("connection refused\r\n");
             return WOLFSSL_CBIO_ERR_WANT_READ;
         case ECONNABORTED:
-            xil_printf("connection aborted\n\r");
+            xil_printf("connection aborted\r\n");
             return WOLFSSL_CBIO_ERR_CONN_CLOSE;
         default:
-            xil_printf("general error\n\r");
+            xil_printf("general error\r\n");
             return WOLFSSL_CBIO_ERR_GENERAL;
         }
     }
     else if (recvd == 0) {
-        xil_printf("Connection closed\n\r");
+        xil_printf("Connection closed\r\n");
         return WOLFSSL_CBIO_ERR_CONN_CLOSE;
     }
 
@@ -288,7 +288,7 @@ int SockIORecv(WOLFSSL* ssl, char* buff, int sz, void* ctx)
 
 #ifdef DEBUG_WOLFTPM
     /* successful receive */
-    xil_printf("SockIORecv: received %d bytes from %d\n\r", sz, sockCtx->fd);
+    xil_printf("SockIORecv: received %d bytes from %d\r\n", sz, sockCtx->fd);
 #endif
 
     return recvd;
@@ -311,30 +311,30 @@ int SockIOSend(WOLFSSL* ssl, char* buff, int sz, void* ctx)
         case EAGAIN: /* EAGAIN == EWOULDBLOCK on some systems, but not others */
     #endif
         case EWOULDBLOCK:
-            xil_printf("would block\n\r");
+            xil_printf("would block\r\n");
             return WOLFSSL_CBIO_ERR_WANT_READ;
         case ECONNRESET:
-            xil_printf("connection reset\n\r");
+            xil_printf("connection reset\r\n");
             return WOLFSSL_CBIO_ERR_CONN_RST;
         case EINTR:
-            xil_printf("socket interrupted\n\r");
+            xil_printf("socket interrupted\r\n");
             return WOLFSSL_CBIO_ERR_ISR;
         case EPIPE:
-            xil_printf("socket EPIPE\n\r");
+            xil_printf("socket EPIPE\r\n");
             return WOLFSSL_CBIO_ERR_CONN_CLOSE;
         default:
-            xil_printf("general error\n\r");
+            xil_printf("general error\r\n");
             return WOLFSSL_CBIO_ERR_GENERAL;
         }
     }
     else if (sent == 0) {
-        xil_printf("Connection closed\n\r");
+        xil_printf("Connection closed\r\n");
         return 0;
     }
 
 #ifdef DEBUG_WOLFTPM
     /* successful send */
-    xil_printf("SockIOSend: sent %d bytes to %d\n\r", sz, sockCtx->fd);
+    xil_printf("SockIOSend: sent %d bytes to %d\r\n", sz, sockCtx->fd);
 #endif
 
     return sent;
@@ -355,25 +355,25 @@ int SetupSocketAndListen(SockIoCbCtx* sockIoCtx, word32 port)
      * Sets the socket to be stream based (TCP),
      * 0 means choose the default protocol. */
     if ((sockIoCtx->listenFd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        xil_printf("ERROR: failed to create the socket\n\r");
+        xil_printf("ERROR: failed to create the socket\r\n");
         return -1;
     }
 
     /* allow reuse */
     if (setsockopt(sockIoCtx->listenFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-        xil_printf("setsockopt SO_REUSEADDR failed\n\r");
+        xil_printf("setsockopt SO_REUSEADDR failed\r\n");
         return -1;
     }
 
     /* Connect to the server */
     if (bind(sockIoCtx->listenFd, (struct sockaddr*)&servAddr,
                                                     sizeof(servAddr)) == -1) {
-        xil_printf("ERROR: failed to bind\n\r");
+        xil_printf("ERROR: failed to bind\r\n");
         return -1;
     }
 
     if (listen(sockIoCtx->listenFd, 5) != 0) {
-        xil_printf("ERROR: failed to listen\n\r");
+        xil_printf("ERROR: failed to listen\r\n");
         return -1;
     }
 
@@ -387,7 +387,7 @@ int SocketWaitClient(SockIoCbCtx* sockIoCtx)
     socklen_t          size = sizeof(clientAddr);
 
     if ((connd = accept(sockIoCtx->listenFd, (struct sockaddr*)&clientAddr, &size)) == -1) {
-        xil_printf("ERROR: failed to accept the connection\n\n\r");
+        xil_printf("ERROR: failed to accept the connection\n\r\n");
         return -1;
     }
     sockIoCtx->fd = connd;
@@ -424,14 +424,14 @@ int SetupSocketAndConnect(SockIoCbCtx* sockIoCtx, const char* host,
      * Sets the socket to be stream based (TCP),
      * 0 means choose the default protocol. */
     if ((sockIoCtx->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        xil_printf("ERROR: failed to create the socket\n\r");
+        xil_printf("ERROR: failed to create the socket\r\n");
         return -1;
     }
 
     /* Connect to the server */
     if (connect(sockIoCtx->fd, (struct sockaddr*)&servAddr,
                                                     sizeof(servAddr)) == -1) {
-        xil_printf("ERROR: failed to connect\n\r");
+        xil_printf("ERROR: failed to connect\r\n");
         return -1;
     }
 

@@ -55,16 +55,16 @@ typedef struct func_args {
 	int return_code;
 } func_args;
 
-static const char menu1[] = "\n\r"
-		"\tt. wolfCrypt Test\n\r"
-		"\tb. wolfCrypt Benchmark\n\r"
-		"\ts. wolfSSL TLS Server\n\r"
-		"\tc. wolfSSL TLS Client\n\r"
-		"\te. Xilinx TCP Echo Server\n\r"
-		"\tr. TPM Generate Certificate Signing Request (CSR)\n\r"
-		"\tg. TPM Get/Set Time\n\r"
-		"\tp. TPM Signed Timestamp\n\r"
-		"\tv. Certification Chain Validate Test\n\r";
+static const char menu1[] = "\r\n"
+		"\tt. wolfCrypt Test\r\n"
+		"\tb. wolfCrypt Benchmark\r\n"
+		"\ts. wolfSSL TLS Server\r\n"
+		"\tc. wolfSSL TLS Client\r\n"
+		"\te. Xilinx TCP Echo Server\r\n"
+		"\tr. TPM Generate Certificate Signing Request (CSR)\r\n"
+		"\tg. TPM Get/Set Time\r\n"
+		"\tp. TPM Signed Timestamp\r\n"
+		"\tv. Certification Chain Validate Test\r\n";
 
 static char get_stdin_char(void)
 {
@@ -83,7 +83,7 @@ void wolfmenu_thread(void* p)
 	wolfSSL_Init();
 
 #ifdef WOLFSSL_XILINX_CRYPT
-	xil_printf("Demonstrating Xilinx hardened crypto\n\r");
+	xil_printf("Demonstrating Xilinx hardened crypto\r\n");
 
 	/* Change from SYSOSC to PLL using the CSU_CTRL register */
 	u32 value = Xil_In32(XSECURE_CSU_CTRL_REG);
@@ -93,12 +93,12 @@ void wolfmenu_thread(void* p)
 	Xil_Out32(0xFF5E00A0, 0x1000400);
 
 #elif defined(WOLFSSL_ARMASM)
-	xil_printf("Demonstrating ARMv8 hardware acceleration\n\r");
+	xil_printf("Demonstrating ARMv8 hardware acceleration\r\n");
 #else
-	xil_printf("Demonstrating wolfSSL software implementation\n\r");
+	xil_printf("Demonstrating wolfSSL software implementation\r\n");
 #endif
 
-	xil_printf("Waiting for network to start\n\r");
+	xil_printf("Waiting for network to start\r\n");
 	while (!network_ready) {
 		usleep(1000);
 	}
@@ -107,9 +107,9 @@ void wolfmenu_thread(void* p)
         memset(&args, 0, sizeof(args));
         args.return_code = NOT_COMPILED_IN; /* default */
 
-		xil_printf("\n\r\t\t\t\tMENU\n\r");
+		xil_printf("\n\r\t\t\t\tMENU\r\n");
 		xil_printf(menu1);
-		xil_printf("Please select one of the above options:\n\r");
+		xil_printf("Please select one of the above options:\r\n");
 
         do {
         	cmd = get_stdin_char();
@@ -117,16 +117,16 @@ void wolfmenu_thread(void* p)
 
 		switch (cmd) {
 		case 't':
-			xil_printf("Running wolfCrypt Tests...\n\r");
+			xil_printf("Running wolfCrypt Tests...\r\n");
         #ifndef NO_CRYPT_TEST
 			args.return_code = 0;
 			wolfcrypt_test(&args);
         #endif
-			xil_printf("Crypt Test: Return code %d\n\r", args.return_code);
+			xil_printf("Crypt Test: Return code %d\r\n", args.return_code);
 			break;
 
 		case 'b':
-			xil_printf("Running wolfCrypt Benchmarks...\n\r");
+			xil_printf("Running wolfCrypt Benchmarks...\r\n");
         #ifndef NO_CRYPT_BENCHMARK
 			args.return_code = 0;
 			benchmark_test(&args);
@@ -162,11 +162,11 @@ void wolfmenu_thread(void* p)
 			args.return_code = VerifyCert_Test();
 			break;
 		default:
-			xil_printf("\n\rSelection out of range\n\r");
+			xil_printf("\n\rSelection out of range\r\n");
 			break;
 		}
 
-		xil_printf("Return code %d\n\r", args.return_code);
+		xil_printf("Return code %d\r\n", args.return_code);
 	}
 
     wolfSSL_Cleanup();
