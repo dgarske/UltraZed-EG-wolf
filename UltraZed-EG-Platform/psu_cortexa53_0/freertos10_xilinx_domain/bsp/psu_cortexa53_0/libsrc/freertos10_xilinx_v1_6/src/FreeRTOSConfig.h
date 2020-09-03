@@ -76,7 +76,7 @@
 
 #define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200)
 
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 200000 ) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 400000 ) )
 
 #define configMAX_TASK_NAME_LEN 10
 

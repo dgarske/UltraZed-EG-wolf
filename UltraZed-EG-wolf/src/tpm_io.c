@@ -48,12 +48,16 @@
 static int SpiInitDone;
 static XSpiPs SpiInstance;
 #ifndef TPM2_SPI_CHIPSELECT
-    #define TPM2_SPI_CHIPSELECT 0x05 /* MIO41 - PMOD P1 (D0) */
+    #define TPM2_SPI_CHIPSELECT 0 /* MIO41 - PMOD P1 (D0) */
 #endif
 #ifndef TPM2_SPI_DEVID
     #define TPM2_SPI_DEVID      XPAR_XSPIPS_0_DEVICE_ID
 #endif
 
+#include "xgpiops.h"
+#ifndef TPM2_N_RESET_IO
+    #define TPM2_N_RESET_IO      (1 << 11) /* MIO37 (Bank 1 bit 11) - PMOD P8 (D5) */
+#endif
 
 #define XSpiPs_SendByte(BaseAddress, Data) \
     XSpiPs_Out32((BaseAddress) + (u32)XSPIPS_TXD_OFFSET, (u32)(Data))
@@ -155,6 +159,10 @@ static int TPM2_IoCb_Xilinx_SPI(TPM2_CTX* ctx, const byte* txBuf,
 #endif
 
     if (!SpiInitDone) {
+        uint32_t pins;
+        XGpioPs_Config* gpio_cfg;
+        XGpioPs gpio_inst;
+
         /* Initialize the SPI driver so that it's ready to use */
         SpiConfig = XSpiPs_LookupConfig(TPM2_SPI_DEVID);
         if (SpiConfig == NULL) {
@@ -170,6 +178,20 @@ static int TPM2_IoCb_Xilinx_SPI(TPM2_CTX* ctx, const byte* txBuf,
         XSpiPs_SetOptions(&SpiInstance, XSPIPS_MASTER_OPTION | 
             XSPIPS_FORCE_SSELECT_OPTION | XSPIPS_MANUAL_START_OPTION);
         XSpiPs_SetClkPrescaler(&SpiInstance, XSPIPS_CLK_PRESCALE_8);
+
+        /* Setup the Reset line and set high */
+        gpio_cfg = XGpioPs_LookupConfig(XPAR_PSU_GPIO_0_DEVICE_ID);
+        XGpioPs_CfgInitialize(&gpio_inst, gpio_cfg, gpio_cfg->BaseAddr);
+
+        /* Set the TPM's reset direction to an output. */
+        XGpioPs_SetDirection(&gpio_inst, XGPIOPS_BANK1, TPM2_N_RESET_IO);
+
+        /* Enable the output of the TPM's reset line. */
+        XGpioPs_SetOutputEnable(&gpio_inst, XGPIOPS_BANK1, TPM2_N_RESET_IO);
+
+        /* Make sure the reset line is high and preserve the other pins. */
+        pins = XGpioPs_Read(&gpio_inst, XGPIOPS_BANK1);
+        XGpioPs_Write(&gpio_inst, XGPIOPS_BANK1, (pins | TPM2_N_RESET_IO));
 
         SpiInitDone = 1;
     }
