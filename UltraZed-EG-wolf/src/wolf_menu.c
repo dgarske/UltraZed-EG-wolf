@@ -109,7 +109,7 @@ void wolfmenu_thread(void* p)
 
 	while (1) {
         memset(&args, 0, sizeof(args));
-        args.return_code = NOT_COMPILED_IN; /* default */
+        rc = NOT_COMPILED_IN; /* default */
 
 		xil_printf("\n\r\t\t\t\tMENU\r\n");
 		xil_printf(menu1);
@@ -125,8 +125,8 @@ void wolfmenu_thread(void* p)
         #ifndef NO_CRYPT_TEST
 			args.return_code = 0;
 			wolfcrypt_test(&args);
+			rc = args.return_code;
         #endif
-			xil_printf("Crypt Test: Return code %d\r\n", args.return_code);
 			break;
 
 		case 'b':
@@ -134,43 +134,44 @@ void wolfmenu_thread(void* p)
         #ifndef NO_CRYPT_BENCHMARK
 			args.return_code = 0;
 			benchmark_test(&args);
+			rc = args.return_code;
         #endif
 			break;
 
 		case 's':
-			args.return_code = TPM2_TLS_Server(NULL);
+			rc = TPM2_TLS_Server(NULL);
 			break;
 		case 'c':
-			args.return_code = TPM2_TLS_Client(NULL);
+			rc = TPM2_TLS_Client(NULL);
 			break;
 		case 'e':
-			args.return_code = echo_application();
+			rc = echo_application();
 			break;
 		case 'r':
-			args.return_code = TPM2_CSR_Example(NULL);
+			rc = TPM2_CSR_Example(NULL);
 			break;
 		case 'g':
 		{
 			UINT64 clockOut = 0;
-			args.return_code = TPM2_ClockGet_Example(NULL, &clockOut);
-			if (args.return_code == 0) {
+			rc = TPM2_ClockGet_Example(NULL, &clockOut);
+			if (rc == 0) {
 				clockOut += (50 * 1000); /* advance 50 seconds */
-				args.return_code = TPM2_ClockSet_Example(NULL, &clockOut);
+				rc = TPM2_ClockSet_Example(NULL, &clockOut);
 			}
 			break;
 		}
 		case 'p':
-			args.return_code = TPM2_Timestamp_Test(NULL);
+			rc = TPM2_Timestamp_Test(NULL);
 			break;
 		case 'v':
-			args.return_code = VerifyCert_Test();
+			rc = VerifyCert_Test();
 			break;
 		case 'l':
 		{
 			WOLFTPM2_DEV dev;
 			rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
 			if (rc == 0) {
-				wolfTPM2_Clear(&dev);
+				rc = wolfTPM2_Clear(&dev);
 				wolfTPM2_Cleanup(&dev);
 			}
 
@@ -181,7 +182,7 @@ void wolfmenu_thread(void* p)
 			break;
 		}
 
-		xil_printf("Return code %d\r\n", args.return_code);
+		xil_printf("Return code %d\r\n", rc);
 	}
 
     wolfSSL_Cleanup();

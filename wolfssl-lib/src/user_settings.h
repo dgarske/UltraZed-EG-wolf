@@ -63,8 +63,12 @@
 //#define WOLFSSL_XILINX_CRYPT /* Xilinx hardware acceleration */
 
 /* TPM Options */
+#define WOLFTPM_SLB9670
 #define WOLFTPM2_USE_SW_ECDHE /* Compute shared secret in software */
-#define TPM_TIMEOUT_TRIES 10000000
+#define TPM_TIMEOUT_TRIES 3000000 /* about 30 seconds */
+#include "sleep.h" /* for usleep() used for network startup wait */
+#define XTPM_WAIT() usleep(10)
+
 
 /* Math */
 #define USE_FAST_MATH
@@ -83,7 +87,7 @@
 
 /* Random: HashDRGB / P-RNG (SHA256) */
 #define HAVE_HASHDRBG
-extern int my_rng_gen_seed(unsigned char* output, unsigned int sz);
+extern int my_rng_seed_gen(unsigned char* output, unsigned int sz);
 #define CUSTOM_RAND_GENERATE_SEED  my_rng_seed_gen
 
 /* Override Current Time */

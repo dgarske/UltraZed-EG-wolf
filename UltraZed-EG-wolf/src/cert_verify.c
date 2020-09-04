@@ -22,7 +22,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #ifdef WOLFSSL_USER_SETTINGS
     #include <wolfssl/wolfcrypt/settings.h>
