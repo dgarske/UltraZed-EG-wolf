@@ -309,7 +309,81 @@ TPM2_ReadClock: success
 
 Return code 0
 
+r
+TPM2 CSR Example
+Generated/Signed Cert (DER 874, PEM 1257)
+-----BEGIN CERTIFICATE REQUEST-----
+MIIDZjCCAk4CAQIwgZsxCzAJBgNVBAYTAlVTMQ8wDQYDVQQIDAZPcmVnb24xETAP
+BgNVBAcMCFBvcnRsYW5kMQ0wCwYDVQQEDARUZXN0MRAwDgYDVQQKDAd3b2xmU1NM
+MQwwCgYDVQQLDANSU0ExGDAWBgNVBAMMD3d3dy53b2xmc3NsLmNvbTEfMB0GCSqG
+SIb3DQEJARYQaW5mb0B3b2xmc3NsLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEP
+ADCCAQoCggEBAJs4joZ7+EKQKGwR+8PD2ey7OhK/qZuHRz0kMxT73MEDqw/zC3+q
+Tx1gibeGi0bPTaLNhlbMQUogp8nAkYObYCIdUZ1Eg82J7YmB57E4wVeQ2u26NvA5
+V5DXJev5YOp5bh3XQnubj26zHaa6EUb12zJpb1lh76MVHvk4rZUR3qdDgUvInS9M
+eslXTSIi3Ae/RktcIx70R5oDlWLfo62LvVCjIfyIv56lAKWT74vaHg+PLbuwDUk7
+1MjWxKINbdn/kJICDPsn27+wBWmTqV4Cj44DGwQcoZ6u1YUV1B8qHXa/UD5lgcW2
+yHudtuHHHJRUxI6mT1pSwDTcyulqZzdKJ+ECAwEAAaCBhDCBgQYJKoZIhvcNAQkO
+MXQwcjApBgNVHQ4EIgQgIFiT4ewuC3Hvtfpup5LM9Ivwfpmmfithrqh60CjII+kw
+RQYDVR0lBD4wPAYIKwYBBQUHAwEGCCsGAQUFBwMCBggrBgEFBQcDAwYIKwYBBQUH
+AwQGCCsGAQUFBwMIBggrBgEFBQcDCTANBgkqhkiG9w0BAQsFAAOCAQEARx3erY/h
+sq+vWkGY3zuRcdsyMJ2j4cXH2IujFa0esDmvy7pMKeD+URWAn2s2E+GNJQdMFJ8X
+yL4mRTM/rcsmcNph79comT6CGPGo+MufiK8oYZhKR3sIV2QQqJ/mFjqdGvrnQaJJ
+Xuxv3EzvjEjChWQN3EgEjnrr0LToFWFJqmsnJOAMkliuB8UTnchRFq3MWbLzYvMa
+SOOpft2tLZ613FpAGHRaWMQnctDQ+bvEuCPLvuGEFM5ckgdxzx6D00ZpW/QQCahH
+yltZdHRH5nWvzVxjJfx/lhoI7liWDSKZNrFDTIHM2YRCXQtf2X6WsDt77vaU2aOu
+NrmRoDT/ZFhjOw==
+-----END CERTIFICATE REQUEST-----
+
+Generated/Signed Cert (DER 481, PEM 725)
+-----BEGIN CERTIFICATE REQUEST-----
+MIIB3TCCAYMCAQIwgZsxCzAJBgNVBAYTAlVTMQ8wDQYDVQQIDAZPcmVnb24xETAP
+BgNVBAcMCFBvcnRsYW5kMQ0wCwYDVQQEDARUZXN0MRAwDgYDVQQKDAd3b2xmU1NM
+MQwwCgYDVQQLDANFQ0MxGDAWBgNVBAMMD3d3dy53b2xmc3NsLmNvbTEfMB0GCSqG
+SIb3DQEJARYQaW5mb0B3b2xmc3NsLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEH
+A0IABPZXLq5Eoqqfg3gyYJOKavcV7SMt1qwEDLgmsNK2xD4vQHPr8tNy/qNQg7H5
+j0MRr2R3/RpeYmKB1vThEVefQTuggYQwgYEGCSqGSIb3DQEJDjF0MHIwKQYDVR0O
+BCIEIOmA7zEdkhxTwRsmd2+n3VDrAPPu+WxqsjxyjOLg7PdPMEUGA1UdJQQ+MDwG
+CCsGAQUFBwMBBggrBgEFBQcDAgYIKwYBBQUHAwMGCCsGAQUFBwMEBggrBgEFBQcD
+CAYIKwYBBQUHAwkwCgYIKoZIzj0EAwIDSAAwRQIhALAkFIymyig/ezJf2OXWmOkg
+vuDztWLMLTYfiwcrG8+IAiA4s4ZtGWCKXuuPIJsGAkI1I1n6KwjmlAJq7rVmyGSh
+Tw==
+-----END CERTIFICATE REQUEST-----
+
+Return code 0
+
+c
+TPM2 TLS Client Example
+In verification callback, error = -188, ASN no signer error to confirm failure
+.Peer certs: 2
+.Subject's domain name at 1 is GTS CA 1O1
+.Allowing failed certificate check, testing only (shouldn't do this in production)
+In verification callback, error = 0, unknown error number
+.Peer certs: 2
+.Subject's domain name at 0 is www.google.com
+Cipher Suite: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+Write (29): GET /index.html HTTP/1.0
+
+
+Read (995): HTTP/1.0 200 OK
+Date: Fri, 04 Sep 2020 19:11:39 GMT
+Expires: -1
+Cache-Control: private, max-age=0
+Content-Type: text/html; charset=ISO-8859-1
+P3P: CP="This is not a P3P policy! See g.co/p3phelp for more info."
+Server: gws
+X-XSS-Protection: 0
+X-Frame-Options: SAMEORIGIN
+Set-Cookie: 1P_JAR=2020-09-04-19; expires=Sun, 04-Oct-2020 19:11:39 GMT; path=/; domain=.google.com; Secure
+Set-Cookie: NID=204=sebXqKFXUWSdkYBOocMkJlePF7iwysqyRsi0eHTNK7XFZVKYDBY5q4MhLdPnF14xrMcTeib37QuxWC3N0OoSfeI0Zo48X3l_jJ95KbbexzyTKuo8sYimxdVslxBOfoVEF9lLaCJdczbXyR55cfCLf3MBho11v1oTHim9c_3-mR8; expires=Sat, 06-Mar-2021 19:11:39 GMT; path=/; domain=.google.com; HttpOnly
+Alt-Svc: h3-29=":443"; ma=2592000,h3-27=":443"; ma=2592000,h3-T051=":443"; ma=2592000,h3-T050=":443"; ma=2592000,h3-Q050=":443"; ma=2592000,h3-Q046=":443"; ma=2592000,h3-Q043=":443"; ma=2592000,quic=":443"; ma=2592000; v="46,43"
+Accept-Ranges: none
+Vary: Accept-Encoding
+
+<!doctype html><html itemscope="" itemtype="http://schema.org
+Return code 0
+
 v
+------------------------------------------------------------
 
 Verification successful on cert1!
 ------------------------------------------------------------
@@ -319,7 +393,13 @@ Verification successful on cert2!
 
 Return code 0
 
+s
+TPM2 TLS Server Example
+Failure -173 (0xFFFFFF53): Bad function argument
+Return code -173
 ```
+
+Note: Server failure is because no certificate or key has been loaded. The CSR needs to be signed by a CA and loaded.
 
 
 ## Support
