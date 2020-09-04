@@ -177,7 +177,7 @@ static int TPM2_IoCb_Xilinx_SPI(TPM2_CTX* ctx, const byte* txBuf,
         /* Set the SPI device as a master */
         XSpiPs_SetOptions(&SpiInstance, XSPIPS_MASTER_OPTION | 
             XSPIPS_FORCE_SSELECT_OPTION | XSPIPS_MANUAL_START_OPTION);
-        XSpiPs_SetClkPrescaler(&SpiInstance, XSPIPS_CLK_PRESCALE_8);
+        XSpiPs_SetClkPrescaler(&SpiInstance, XSPIPS_CLK_PRESCALE_16);
 
         /* Setup the Reset line and set high */
         gpio_cfg = XGpioPs_LookupConfig(XPAR_PSU_GPIO_0_DEVICE_ID);

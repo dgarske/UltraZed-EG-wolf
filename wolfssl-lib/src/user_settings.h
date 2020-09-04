@@ -38,6 +38,7 @@
 #define FREERTOS
 #define WOLFSSL_LWIP
 #define NO_FILESYSTEM
+#define NO_STDIO_FILESYSTEM
 
 /* Features */
 #define HAVE_TLS_EXTENSIONS
@@ -65,7 +66,7 @@
 /* TPM Options */
 #define WOLFTPM_SLB9670
 #define WOLFTPM2_USE_SW_ECDHE /* Compute shared secret in software */
-#define TPM_TIMEOUT_TRIES 3000000 /* about 30 seconds */
+#define TPM_TIMEOUT_TRIES 6000000 /* about 60 seconds */
 #include "sleep.h" /* for usleep() used for network startup wait */
 #define XTPM_WAIT() usleep(10)
 
@@ -162,9 +163,10 @@ extern unsigned long my_time(unsigned long* timer);
 #define USE_CERT_BUFFERS_2048
 
 /* Debugging */
-#if 1
+#if 0
 	#define DEBUG_WOLFSSL
 	#define DEBUG_WOLFTPM
+	#define WOLFTPM_DEBUG_TIMEOUT
 #endif
 
 #endif /* SRC_USER_SETTINGS_H_ */
