@@ -63,6 +63,7 @@
  * With most browsers you can bypass the certificate warning.
  */
 
+extern WOLFTPM2_DEV dev;
 
 /******************************************************************************/
 /* --- BEGIN TLS SERVER Example -- */
@@ -70,7 +71,6 @@
 int TPM2_TLS_Server(void* userCtx)
 {
     int rc;
-    WOLFTPM2_DEV dev;
     WOLFTPM2_KEY storageKey;
 #ifndef NO_RSA
     WOLFTPM2_KEY rsaKey;
@@ -358,6 +358,9 @@ int TPM2_TLS_Server(void* userCtx)
     wolfSSL_SetIOReadCtx(ssl, &sockIoCtx);
     wolfSSL_SetIOWriteCtx(ssl, &sockIoCtx);
 
+    wolfSSL_Debugging_ON();
+
+    xil_printf("Waiting on client connection \r\n");
     /* Accept client connections */
     rc = SocketWaitClient(&sockIoCtx);
     if (rc != 0) goto exit;

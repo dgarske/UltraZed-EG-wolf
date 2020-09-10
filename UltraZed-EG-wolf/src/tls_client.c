@@ -66,6 +66,7 @@
  * "-l ECDHE-ECDSA-AES128-SHA -c ./certs/server-ecc.pem -k ./certs/ecc-key.pem"
  */
 
+extern WOLFTPM2_DEV dev;
 
 /******************************************************************************/
 /* --- BEGIN TPM TLS Client Example -- */
@@ -73,7 +74,6 @@
 int TPM2_TLS_Client(void* userCtx)
 {
     int rc;
-    WOLFTPM2_DEV dev;
     WOLFTPM2_KEY storageKey;
 #ifndef NO_RSA
     WOLFTPM2_KEY rsaKey;

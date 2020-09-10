@@ -38,6 +38,8 @@
 
 #include "compile_time.h"
 
+extern WOLFTPM2_DEV dev;
+
 /* TIME CODE */
 /* TODO: Implement TPM based time */
 static int hw_get_time_sec(void)
@@ -113,14 +115,5 @@ double current_time(int reset)
 /* RNG Seed Function */
 int my_rng_seed_gen(byte* output, word32 sz)
 {
-    int rc;
-    WOLFTPM2_DEV dev;
-    
-    rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
-    if (rc == 0) {
-        rc = wolfTPM2_GetRandom(&dev, output, sz);
-        wolfTPM2_Cleanup(&dev);
-    }
-
-    return rc;
+    return wolfTPM2_GetRandom(&dev, output, sz);
 }

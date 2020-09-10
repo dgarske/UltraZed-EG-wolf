@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include "xil_printf.h"
 
+extern WOLFTPM2_DEV dev;
+
 /******************************************************************************/
 /* --- BEGIN TPM Clock Set Example -- */
 /******************************************************************************/
@@ -38,7 +40,6 @@
 int TPM2_ClockGet_Example(void* userCtx, UINT64* clockOut)
 {
     int rc = 0;
-    WOLFTPM2_DEV dev;
 
     union {
         ReadClock_Out readClock;
@@ -95,7 +96,6 @@ exit:
 int TPM2_ClockSet_Example(void* userCtx, UINT64* newClock)
 {
     int rc = 0;
-    WOLFTPM2_DEV dev;
 
     union {
         ClockSet_In clockSet;

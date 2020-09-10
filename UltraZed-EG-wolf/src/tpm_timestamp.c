@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include "xil_printf.h"
 
+extern WOLFTPM2_DEV dev;
 
 /******************************************************************************/
 /* --- BEGIN TPM Timestamp Test -- */
@@ -40,7 +41,6 @@
 int TPM2_Timestamp_Test(void* userCtx)
 {
     int rc;
-    WOLFTPM2_DEV dev;
     TPMS_ATTEST attestedData;
 
     union {

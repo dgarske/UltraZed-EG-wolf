@@ -51,6 +51,8 @@ int network_ready; /* global variable in networking.c */
 #define THREAD_STACKSIZE (32*1024)
 
 
+WOLFTPM2_DEV dev;
+
 typedef struct func_args {
 	int argc;
 	char** argv;
@@ -85,6 +87,11 @@ void wolfmenu_thread(void* p)
 	wolfSSL_Debugging_ON();
 #endif
 	wolfSSL_Init();
+
+    rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
+	if (rc != 0) {
+		xil_printf("TPM Startup Error\r\n");
+	}
 
 #ifdef WOLFSSL_XILINX_CRYPT
 	xil_printf("Demonstrating Xilinx hardened crypto\r\n");
@@ -167,16 +174,8 @@ void wolfmenu_thread(void* p)
 			rc = VerifyCert_Test();
 			break;
 		case 'l':
-		{
-			WOLFTPM2_DEV dev;
-			rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
-			if (rc == 0) {
-				rc = wolfTPM2_Clear(&dev);
-				wolfTPM2_Cleanup(&dev);
-			}
-
+			rc = wolfTPM2_Clear(&dev);
 			break;
-		}
 		default:
 			xil_printf("\n\rSelection out of range\r\n");
 			break;
@@ -186,6 +185,7 @@ void wolfmenu_thread(void* p)
 	}
 
     wolfSSL_Cleanup();
+	wolfTPM2_Cleanup(&dev);
 
 	vTaskDelete(NULL);
     return;

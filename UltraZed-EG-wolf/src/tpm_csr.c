@@ -39,11 +39,13 @@ static const char* gClientCertRsaFile = "./certs/tpm-rsa-cert.csr";
 static const char* gClientCertEccFile = "./certs/tpm-ecc-cert.csr";
 #endif
 
+extern WOLFTPM2_DEV dev;
+
 /******************************************************************************/
 /* --- BEGIN TPM2 CSR Example -- */
 /******************************************************************************/
 
-static int TPM2_CSR_Generate(WOLFTPM2_DEV* dev, int key_type, void* wolfKey,
+static int TPM2_CSR_Generate(int key_type, void* wolfKey,
     const char* outputPemFile)
 {
     int rc;
@@ -98,7 +100,7 @@ static int TPM2_CSR_Generate(WOLFTPM2_DEV* dev, int key_type, void* wolfKey,
     der.size = rc;
 
     rc = wc_SignCert_ex(req.bodySz, req.sigType, der.buffer, sizeof(der.buffer),
-        key_type, wolfKey, wolfTPM2_GetRng(dev));
+        key_type, wolfKey, wolfTPM2_GetRng(&dev));
     if (rc <= 0) goto exit;
     der.size = rc;
 
@@ -137,7 +139,6 @@ exit:
 int TPM2_CSR_Example(void* userCtx)
 {
     int rc;
-    WOLFTPM2_DEV dev;
     WOLFTPM2_KEY storageKey;
 #ifndef NO_RSA
     WOLFTPM2_KEY rsaKey;
@@ -226,7 +227,7 @@ int TPM2_CSR_Example(void* userCtx)
     rc = wolfTPM2_RsaKey_TpmToWolf(&dev, &rsaKey, &wolfRsaKey);
     if (rc != 0) goto exit;
 
-    rc = TPM2_CSR_Generate(&dev, RSA_TYPE, &wolfRsaKey, gClientCertRsaFile);
+    rc = TPM2_CSR_Generate(RSA_TYPE, &wolfRsaKey, gClientCertRsaFile);
     if (rc != 0) goto exit;
 #endif /* !NO_RSA */
 
@@ -262,7 +263,7 @@ int TPM2_CSR_Example(void* userCtx)
     rc = wolfTPM2_EccKey_TpmToWolf(&dev, &eccKey, &wolfEccKey);
     if (rc != 0) goto exit;
 
-    rc = TPM2_CSR_Generate(&dev, ECC_TYPE, &wolfEccKey, gClientCertEccFile);
+    rc = TPM2_CSR_Generate(ECC_TYPE, &wolfEccKey, gClientCertEccFile);
     if (rc != 0) goto exit;
 #endif /* HAVE_ECC */
 
