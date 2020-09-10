@@ -81,17 +81,14 @@ void wolfmenu_thread(void* p)
 	int rc;
 	uint8_t cmd;
 	func_args args;
+	WOLFTPM2_CAPS caps;
+
 	(void)p;
 
 #ifdef DEBUG_WOLFSSL
 	wolfSSL_Debugging_ON();
 #endif
 	wolfSSL_Init();
-
-    rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
-	if (rc != 0) {
-		xil_printf("TPM Startup Error\r\n");
-	}
 
 #ifdef WOLFSSL_XILINX_CRYPT
 	xil_printf("Demonstrating Xilinx hardened crypto\r\n");
@@ -108,6 +105,18 @@ void wolfmenu_thread(void* p)
 #else
 	xil_printf("Demonstrating wolfSSL software implementation\r\n");
 #endif
+
+    rc = wolfTPM2_Init(&dev, TPM2_IoCb, NULL);
+	if (rc != 0) {
+		xil_printf("TPM Startup Error %d\r\n", rc);
+	}
+
+    rc = wolfTPM2_GetCapabilities(&dev, &caps);
+    xil_printf("TPM Mfg %s (%d), Vendor %s, Fw %u.%u (%u), "
+        "FIPS 140-2 %d, CC-EAL4 %d\r\n",
+        caps.mfgStr, caps.mfg, caps.vendorStr, caps.fwVerMajor,
+        caps.fwVerMinor, caps.fwVerVendor, caps.fips140_2, caps.cc_eal4);
+
 
 	xil_printf("Waiting for network to start\r\n");
 	while (!network_ready) {
