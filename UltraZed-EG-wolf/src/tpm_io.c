@@ -177,6 +177,7 @@ static int TPM2_IoCb_Xilinx_SPI(TPM2_CTX* ctx, const byte* txBuf,
         /* Set the SPI device as a master */
         XSpiPs_SetOptions(&SpiInstance, XSPIPS_MASTER_OPTION | 
             XSPIPS_FORCE_SSELECT_OPTION | XSPIPS_MANUAL_START_OPTION);
+        /* SPI Core Clock: 200MHz / 16 = 12.5 MHz */
         XSpiPs_SetClkPrescaler(&SpiInstance, XSPIPS_CLK_PRESCALE_16);
 
         /* Setup the Reset line and set high */
