@@ -13,14 +13,10 @@
 *
 *******************************************************************/
 
-#ifndef __BSPCONFIG_H_
-#define __BSPCONFIG_H_
+#ifndef BSPCONFIG_H  /* prevent circular inclusions */
+#define BSPCONFIG_H  /* by using protection macros */
 
-/*
- * Definition to indicate that current BSP is a FreeRTOS BSP which can be used to
- * distinguish between standalone BSP and FreeRTOS BSP.
- */
-#define FREERTOS_BSP
+#define MICROBLAZE_PVR_NONE
 #define EL3 1
 #define EL1_NONSECURE 0
 #define HYP_GUEST 0

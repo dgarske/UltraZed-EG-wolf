@@ -23,15 +23,23 @@
 
 #include "xparameters_ps.h"
 
-/* Platform specific definitions */
-#define PLATFORM_ZYNQMP
- 
-/******************************************************************/
+
+/* Number of Fabric Resets */
+#define XPAR_NUM_FABRIC_RESETS 1
+
 #define STDIN_BASEADDRESS 0xFF000000
 #define STDOUT_BASEADDRESS 0xFF000000
 
 /******************************************************************/
 
+/* Platform specific definitions */
+#define PLATFORM_ZYNQMP
+ 
+/* Definitions for sleep timer configuration */
+#define XSLEEP_TIMER_IS_DEFAULT_TIMER
+ 
+ 
+/******************************************************************/
 /* Definitions for driver AVBUF */
 #define XPAR_XAVBUF_NUM_INSTANCES 1
 
@@ -1462,12 +1470,12 @@
 
 /******************************************************************/
 
-
-/* Xilinx processor macro for Secure Library (Xilskey) */ 
-
-#define XPAR_XSK_ARM_PLATFORM 1
-
-#define XSK_OVERRIDE_SYSMON_CFG 
-
-
+/* Xilinx FAT File System Library (XilFFs) User Settings */
+#define FILE_SYSTEM_INTERFACE_SD
+#define FILE_SYSTEM_READ_ONLY
+#define FILE_SYSTEM_NUM_LOGIC_VOL 2
+#define FILE_SYSTEM_USE_STRFUNC 0
+#define FILE_SYSTEM_SET_FS_RPATH 0
+#define FILE_SYSTEM_WORD_ACCESS
+#define XPAR_XILPM_ENABLED
 #endif  /* end of protection macro */

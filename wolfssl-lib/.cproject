@@ -83,7 +83,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1536323145" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1536323145" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="    " valueType="string"/>
                                 								
                                 <inputType id="xilinx.gnu.arm.a53.c.compiler.input.1263941165" name="C source files" superClass="xilinx.gnu.arm.a53.c.compiler.input"/>
                                 							
@@ -101,7 +101,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.222093659" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.222093659" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="    " valueType="string"/>
                                 								
                                 <option id="xilinx.gnu.compiler.dircategory.includes.679134954" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
                                     									
@@ -132,6 +132,8 @@
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-llwip4,-lgcc,-lc,--end-group"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 							
@@ -154,6 +156,8 @@
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-llwip4,-lgcc,-lc,--end-group"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 							
@@ -243,7 +247,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.201027285" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.201027285" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="    " valueType="string"/>
                                 								
                                 <option id="xilinx.gnu.compiler.dircategory.includes.1454143753" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
                                     									
@@ -269,7 +273,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1556549623" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1556549623" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="    " valueType="string"/>
                                 								
                                 <option id="xilinx.gnu.compiler.dircategory.includes.1136061596" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
                                     									
@@ -300,6 +304,8 @@
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-llwip4,-lgcc,-lc,--end-group"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 							
@@ -322,6 +328,8 @@
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-llwip4,-lgcc,-lc,--end-group"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 							

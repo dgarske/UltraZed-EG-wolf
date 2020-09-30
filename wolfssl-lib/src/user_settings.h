@@ -163,8 +163,8 @@ extern unsigned long my_time(unsigned long* timer);
 #define USE_CERT_BUFFERS_2048
 
 /* Debugging */
-#if 0
-	#define DEBUG_WOLFSSL
+#if 1
+	//#define DEBUG_WOLFSSL
 	#define DEBUG_WOLFTPM
 	#define WOLFTPM_DEBUG_TIMEOUT
 #endif
