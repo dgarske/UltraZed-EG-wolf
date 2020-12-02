@@ -24,6 +24,7 @@ Portable TPM 2.0 project designed for embedded use.
 	* TLS Client
 	* TLS Server
 	* Benchmarking TPM algorithms and TLS
+* Parameter encryption support using AES-CFB or XOR. Supports salted unbound authenticated sessions.
 
 Note: See [examples/README.md](examples/README.md) for details on using the examples.
 
@@ -111,7 +112,7 @@ Mfg NTC (0), Vendor NPCT75x"!!4rls, Fw 7.2 (131072), FIPS 140-2 1, CC-EAL4 0
 git clone https://github.com/wolfSSL/wolfssl.git
 cd wolfssl
 ./autogen.sh
-./configure --enable-certgen --enable-certreq --enable-certext --enable-pkcs7 --enable-cryptocb
+./configure --enable-certgen --enable-certreq --enable-certext --enable-pkcs7 --enable-cryptocb --enable-aescfb
 make
 sudo make install
 sudo ldconfig
@@ -137,6 +138,10 @@ autogen.sh requires: automake and libtool: `sudo apt-get install automake libtoo
 --enable-st             Enable ST ST33TPM Support (default: disabled) - WOLFTPM_ST33
 --enable-microchip      Enable Microchip ATTPM20 Support (default: disabled) - WOLFTPM_MCHP
 --enable-nuvoton        Enable Nuvoton NPCT65x/NPCT75x Support (default: disabled) - WOLFTPM_NUVOTON
+
+--enable-devtpm         Enable using Linux kernel driver for /dev/tpmX (default: disabled) - WOLFTPM_LINUX_DEV
+--enable-swtpm          Enable using SWTPM TCP protocol. For use with simulator. (default: disabled) - WOLFTPM_SWTPM
+--enable-winapi         Use Windows TBS API. (default: disabled) - WOLFTPM_WINAPI
 
 WOLFTPM_USE_SYMMETRIC   Enables symmetric AES/Hashing/HMAC support for TLS examples.
 WOLFTPM2_USE_SW_ECDHE   Disables use of TPM for ECC ephemeral key generation and shared secret for TLS examples.
@@ -208,6 +213,14 @@ Note: When using a TPM device through the Linux kernel driver make sure sufficie
 ```
 sudo adduser yourusername tss
 ```
+
+### Building for SWTPM
+
+See `docs/SWTPM.md`
+
+### Building for Windows TBS API
+
+See `docs/WindowTBS.md`
 
 ## Running Examples
 
@@ -624,10 +637,11 @@ Connection: close
 
 ## Todo
 
-* Add support for encrypting / decrypting parameters.
-* Add support for SensitiveToPrivate inner and outer.
-* Add runtime support for detecting module type ST33, SLB9670 or ATTPM20.
 * Update to v1.59 of specification.
+* Add HMAC support for "authValue".
+* Add ECC encrypted salt.
+* Add bound auth session support.
+* Add multiple auth session (nonceTPMDecrypt and nonceTPMEncrypt) support.
 
 ## Support
 

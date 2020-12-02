@@ -29,6 +29,7 @@
 
 #include <examples/tpm_io.h>
 #include <examples/tpm_test.h>
+#include <examples/tpm_test_keys.h>
 #include <examples/csr/csr.h>
 #include <wolfssl/wolfcrypt/asn_public.h>
 
@@ -138,6 +139,10 @@ exit:
 
 int TPM2_CSR_Example(void* userCtx)
 {
+    return TPM2_CSR_ExampleArgs(userCtx, 0, NULL);
+}
+int TPM2_CSR_ExampleArgs(void* userCtx, int argc, char *argv[])
+{
     int rc;
     WOLFTPM2_DEV dev;
     WOLFTPM2_KEY storageKey;
@@ -149,11 +154,13 @@ int TPM2_CSR_Example(void* userCtx)
     WOLFTPM2_KEY eccKey;
     ecc_key wolfEccKey;
 #endif
-    TPMT_PUBLIC publicTemplate;
     TpmCryptoDevCtx tpmCtx;
     int tpmDevId;
 
     printf("TPM2 CSR Example\n");
+
+    (void)argc;
+    (void)argv;
 
     /* Init the TPM2 device */
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
@@ -173,59 +180,16 @@ int TPM2_CSR_Example(void* userCtx)
     if (rc != 0) goto exit;
 
     /* See if primary storage key already exists */
-    rc = wolfTPM2_ReadPublicKey(&dev, &storageKey,
-        TPM2_DEMO_STORAGE_KEY_HANDLE);
-    if (rc != 0) {
-        /* Create primary storage key */
-        rc = wolfTPM2_GetKeyTemplate_RSA(&publicTemplate,
-            TPMA_OBJECT_fixedTPM | TPMA_OBJECT_fixedParent |
-            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
-            TPMA_OBJECT_restricted | TPMA_OBJECT_decrypt | TPMA_OBJECT_noDA);
-        if (rc != 0) goto exit;
-        rc = wolfTPM2_CreatePrimaryKey(&dev, &storageKey, TPM_RH_OWNER,
-            &publicTemplate, (byte*)gStorageKeyAuth, sizeof(gStorageKeyAuth)-1);
-        if (rc != 0) goto exit;
-
-        /* Move this key into persistent storage */
-        rc = wolfTPM2_NVStoreKey(&dev, TPM_RH_OWNER, &storageKey,
-            TPM2_DEMO_STORAGE_KEY_HANDLE);
-        if (rc != 0) goto exit;
-    }
-    else {
-        /* specify auth password for storage key */
-        storageKey.handle.auth.size = sizeof(gStorageKeyAuth)-1;
-        XMEMCPY(storageKey.handle.auth.buffer, gStorageKeyAuth,
-            storageKey.handle.auth.size);
-    }
+    rc = getPrimaryStoragekey(&dev, &storageKey, TPM_ALG_RSA);
+    if (rc != 0) goto exit;
 
 #ifndef NO_RSA
-    /* Create/Load RSA key for CSR */
-    rc = wolfTPM2_ReadPublicKey(&dev, &rsaKey, TPM2_DEMO_RSA_KEY_HANDLE);
-    if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_RSA(&publicTemplate,
-            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
-            TPMA_OBJECT_decrypt | TPMA_OBJECT_sign | TPMA_OBJECT_noDA);
-        if (rc != 0) goto exit;
-        rc = wolfTPM2_CreateAndLoadKey(&dev, &rsaKey, &storageKey.handle,
-            &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
-        if (rc != 0) goto exit;
-
-        /* Move this key into persistent storage */
-        rc = wolfTPM2_NVStoreKey(&dev, TPM_RH_OWNER, &rsaKey,
-            TPM2_DEMO_RSA_KEY_HANDLE);
-        if (rc != 0) goto exit;
-    }
-    else {
-        /* specify auth password for RSA key */
-        rsaKey.handle.auth.size = sizeof(gKeyAuth)-1;
-        XMEMCPY(rsaKey.handle.auth.buffer, gKeyAuth, rsaKey.handle.auth.size);
-    }
-
-    /* setup wolf RSA key with TPM deviceID, so crypto callbacks are used */
-    rc = wc_InitRsaKey_ex(&wolfRsaKey, NULL, tpmDevId);
-    if (rc != 0) goto exit;
-    /* load public portion of key into wolf RSA Key */
-    rc = wolfTPM2_RsaKey_TpmToWolf(&dev, &rsaKey, &wolfRsaKey);
+    rc = getRSAkey(&dev,
+                   &storageKey,
+                   &rsaKey,
+                   &wolfRsaKey,
+                   tpmDevId,
+                   (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
     if (rc != 0) goto exit;
 
     rc = TPM2_CSR_Generate(&dev, RSA_TYPE, &wolfRsaKey, gClientCertRsaFile);
@@ -234,34 +198,12 @@ int TPM2_CSR_Example(void* userCtx)
 
 
 #ifdef HAVE_ECC
-    /* Create/Load ECC key for CSR */
-    rc = wolfTPM2_ReadPublicKey(&dev, &eccKey, TPM2_DEMO_ECC_KEY_HANDLE);
-    if (rc != 0) {
-        rc = wolfTPM2_GetKeyTemplate_ECC(&publicTemplate,
-            TPMA_OBJECT_sensitiveDataOrigin | TPMA_OBJECT_userWithAuth |
-            TPMA_OBJECT_sign | TPMA_OBJECT_noDA,
-            TPM_ECC_NIST_P256, TPM_ALG_ECDSA);
-        if (rc != 0) goto exit;
-        rc = wolfTPM2_CreateAndLoadKey(&dev, &eccKey, &storageKey.handle,
-            &publicTemplate, (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
-        if (rc != 0) goto exit;
-
-        /* Move this key into persistent storage */
-        rc = wolfTPM2_NVStoreKey(&dev, TPM_RH_OWNER, &eccKey,
-            TPM2_DEMO_ECC_KEY_HANDLE);
-        if (rc != 0) goto exit;
-    }
-    else {
-        /* specify auth password for ECC key */
-        eccKey.handle.auth.size = sizeof(gKeyAuth)-1;
-        XMEMCPY(eccKey.handle.auth.buffer, gKeyAuth, eccKey.handle.auth.size);
-    }
-
-    /* setup wolf ECC key with TPM deviceID, so crypto callbacks are used */
-    rc = wc_ecc_init_ex(&wolfEccKey, NULL, tpmDevId);
-    if (rc != 0) goto exit;
-    /* load public portion of key into wolf ECC Key */
-    rc = wolfTPM2_EccKey_TpmToWolf(&dev, &eccKey, &wolfEccKey);
+    rc =  getECCkey(&dev,
+                    &storageKey,
+                    &eccKey,
+                    &wolfEccKey,
+                    tpmDevId, 
+                    (byte*)gKeyAuth, sizeof(gKeyAuth)-1);
     if (rc != 0) goto exit;
 
     rc = TPM2_CSR_Generate(&dev, ECC_TYPE, &wolfEccKey, gClientCertEccFile);
@@ -273,6 +215,9 @@ exit:
     if (rc != 0) {
         printf("Failure 0x%x: %s\n", rc, wolfTPM2_GetRCString(rc));
     }
+
+
+    wolfTPM2_UnloadHandle(&dev, &storageKey.handle);
 
 #ifndef NO_RSA
     wc_FreeRsaKey(&wolfRsaKey);
@@ -295,16 +240,19 @@ exit:
 #endif /* !WOLFTPM2_NO_WRAPPER && WOLFSSL_CERT_REQ && WOLF_CRYPTO_DEV */
 
 #ifndef NO_MAIN_DRIVER
-int main(void)
+int main(int argc, char *argv[])
 {
     int rc = -1;
 
 #if !defined(WOLFTPM2_NO_WRAPPER) && !defined(WOLFTPM2_NO_WOLFCRYPT) && \
     defined(WOLFSSL_CERT_REQ) && \
     (defined(WOLF_CRYPTO_DEV) || defined(WOLF_CRYPTO_CB))
-    rc = TPM2_CSR_Example(NULL);
+    rc = TPM2_CSR_ExampleArgs(NULL, argc, argv);
 #else
-    printf("Wrapper/CertReq/CryptoCb code not compiled in\n");
+    (void)argc;
+    (void)argv;
+
+    printf("Wrapper/CertReq/CryptoDev code not compiled in\n");
     printf("Build wolfssl with ./configure --enable-certgen --enable-certreq --enable-certext --enable-cryptocb\n");
 #endif
 

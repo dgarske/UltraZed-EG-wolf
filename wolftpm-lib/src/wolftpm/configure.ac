@@ -3,7 +3,7 @@
 # All right reserved.
 
 AC_COPYRIGHT([Copyright (C) 2014-2020 wolfSSL Inc.])
-AC_INIT([wolftpm],[1.9.0],[https://github.com/wolfssl/wolfTPM/issues],[wolftpm],[http://www.wolfssl.com])
+AC_INIT([wolftpm],[2.0.0],[https://github.com/wolfssl/wolfTPM/issues],[wolftpm],[http://www.wolfssl.com])
 
 AC_PREREQ([2.63])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -23,7 +23,7 @@ AC_ARG_PROGRAM
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([src/config.h])
 
-WOLFTPM_LIBRARY_VERSION=9:0:0
+WOLFTPM_LIBRARY_VERSION=10:0:0
 #                        | | |
 #                 +------+ | +---+
 #                 |        |     |
@@ -179,6 +179,40 @@ then
     AM_CFLAGS="$AM_CFLAGS -DWOLFTPM_LINUX_DEV"
 fi
 
+# SW TPM device Support
+AC_ARG_ENABLE([swtpm],
+    [AS_HELP_STRING([--enable-swtpm],[Enable use of TPM through the SW socket driver (default: disabled)])],
+    [ ENABLED_SWTPM=$enableval ],
+    [ ENABLED_SWTPM=no ]
+    )
+
+if test "x$ENABLED_SWTPM" = "xyes"
+then
+    if test "x$ENABLED_DEVTPM" = "xyes"
+    then
+        AC_MSG_ERROR([Cannot enable both swtpm and devtpm])
+    fi
+
+    AM_CFLAGS="$AM_CFLAGS -DWOLFTPM_SWTPM"
+fi
+
+# Windows TBS device Support
+AC_ARG_ENABLE([winapi],
+    [AS_HELP_STRING([--enable-winapi],[Enable use of TPM through Windows driver (default: disabled)])],
+    [ ENABLED_WINAPI=$enableval ],
+    [ ENABLED_WINAPI=no ]
+    )
+
+if test "x$ENABLED_WINAPI" = "xyes"
+then
+    if test "x$ENABLED_DEVTPM" = "xyes" -o "x$ENABLED_SWTPM" = "xyes"
+    then
+        AC_MSG_ERROR([Cannot enable swtpm or devtpm with windows API])
+    fi
+
+    AM_CFLAGS="$AM_CFLAGS -DWOLFTPM_WINAPI"
+fi
+
 
 # STM ST33 Support
 AC_ARG_ENABLE([st33],,
@@ -318,6 +352,8 @@ AM_CONDITIONAL([BUILD_ST], [test "x$ENABLED_ST" = "xyes"])
 AM_CONDITIONAL([BUILD_MICROCHIP], [test "x$ENABLED_MICROCHIP" = "xyes"])
 AM_CONDITIONAL([BUILD_INFINEON], [test "x$ENABLED_INFINEON" = "xyes"])
 AM_CONDITIONAL([BUILD_DEVTPM], [test "x$ENABLED_DEVTPM" = "xyes"])
+AM_CONDITIONAL([BUILD_SWTPM], [test "x$ENABLED_SWTPM" = "xyes"])
+AM_CONDITIONAL([BUILD_WINAPI], [test "x$ENABLED_WINAPI" = "xyes"])
 AM_CONDITIONAL([BUILD_NUVOTON], [test "x$ENABLED_NUVOTON" = "xyes"])
 AM_CONDITIONAL([BUILD_CHECKWAITSTATE], [test "x$ENABLED_CHECKWAITSTATE" = "xyes"])
 AM_CONDITIONAL([BUILD_AUTODETECT], [test "x$ENABLED_AUTODETECT" = "xyes"])
@@ -436,6 +472,8 @@ echo "   * wolfCrypt:                 $ENABLED_WOLFCRYPT"
 echo "   * Advanced IO:               $ENABLED_ADVIO"
 echo "   * I2C:                       $ENABLED_I2C"
 echo "   * Linux kernel TPM device:   $ENABLED_DEVTPM"
+echo "   * SWTPM:                     $ENABLED_SWTPM"
+echo "   * WINAPI:                    $ENABLED_WINAPI"
 echo "   * TIS/SPI Check Wait State:  $ENABLED_CHECKWAITSTATE"
 
 echo "   * Infineon SLB9670           $ENABLED_INFINEON"

@@ -75,10 +75,13 @@ typedef int64_t  INT64;
     #include <wolfssl/wolfcrypt/types.h>
     #include <wolfssl/wolfcrypt/logging.h>
     #include <wolfssl/wolfcrypt/error-crypt.h>
+    #include <wolfssl/error-ssl.h>
     #include <wolfssl/wolfcrypt/hash.h>
     #include <wolfssl/wolfcrypt/rsa.h>
     #include <wolfssl/wolfcrypt/ecc.h>
     #include <wolfssl/wolfcrypt/asn_public.h>
+    #include <wolfssl/wolfcrypt/hmac.h>
+    #include <wolfssl/wolfcrypt/aes.h>
     #ifdef WOLF_CRYPTO_CB
         #include <wolfssl/wolfcrypt/cryptocb.h>
     #elif defined(WOLF_CRYPTO_DEV)
@@ -99,6 +102,9 @@ typedef int64_t  INT64;
         /* The wc_HashFree was added in v3.15.4, so use stub to allow building */
         #define wc_HashFree(h, t) (0)
     #endif
+    #ifndef XFEOF
+        #define XFEOF      feof
+    #endif
 
 #else
 
@@ -110,17 +116,22 @@ typedef int64_t  INT64;
     typedef uint32_t word32;
     typedef uint64_t word64;
 
+    /* Errors from wolfssl/wolfcrypt/error-crypt.h */
     #define BAD_FUNC_ARG          -173  /* Bad function argument provided */
     #define BUFFER_E              -132  /* output buffer too small or input too large */
     #define NOT_COMPILED_IN       -174  /* Feature not compiled in */
     #define BAD_MUTEX_E           -106  /* Bad mutex operation */
     #define WC_TIMEOUT_E          -107  /* timeout error */
 
+    /* Errors from wolfssl/error-ssl.h */
+    #define SOCKET_ERROR_E        -308  /* error state on socket    */
+
 #ifndef WOLFTPM_CUSTOM_TYPES
     #define XMEMCPY(d,s,l)    memcpy((d),(s),(l))
     #define XMEMSET(b,c,l)    memset((b),(c),(l))
     #define XMEMCMP(s1,s2,n)  memcmp((s1),(s2),(n))
     #define XSTRLEN(s1)       strlen((s1))
+    #define XSTRNCMP(s1,s2,n) strncmp((s1),(s2),(n))
 #endif /* !WOLFTPM_CUSTOM_TYPES */
 
     /* Endianess */
@@ -137,6 +148,23 @@ typedef int64_t  INT64;
             #define __GNUC_PREREQ(maj, min) (0) /* not GNUC */
         #endif
     #endif
+
+#if !defined(WOLFTPM_CUSTOM_STDIO) && !defined(NO_FILESYSTEM)
+    /* stdio, default case */
+    #define XFILE      FILE*
+    #define XFOPEN     fopen
+    #define XFSEEK     fseek
+    #define XFTELL     ftell
+    #define XREWIND    rewind
+    #define XFREAD     fread
+    #define XFWRITE    fwrite
+    #define XFCLOSE    fclose
+    #define XSEEK_END  SEEK_END
+    #define XBADFILE   NULL
+    #define XFGETS     fgets
+    #define XFEOF      feof
+#endif
+
 #endif /* !WOLFTPM2_NO_WOLFCRYPT */
 
 /* enable way for customer to override printf */
@@ -265,7 +293,7 @@ typedef int64_t  INT64;
 #endif
 
 #ifndef TPM_TIMEOUT_TRIES
-    #ifdef WOLFTPM_LINUX_DEV
+    #if defined(WOLFTPM_LINUX_DEV) || defined(WOLFTPM_SWTPM) || defined(WOLFTPM_WINAPI)
     #define TPM_TIMEOUT_TRIES 0
     #else
     #define TPM_TIMEOUT_TRIES 1000000

@@ -1565,30 +1565,36 @@ typedef struct TPM2B_CREATION_DATA {
 
 
 /* Authorization Structures */
-
 typedef struct TPMS_AUTH_COMMAND {
     TPMI_SH_AUTH_SESSION sessionHandle;
-    TPM2B_NONCE nonce;
+    TPM2B_NONCE nonce; /* nonceCaller */
     TPMA_SESSION sessionAttributes;
-    TPM2B_AUTH auth;
-
-    /* Implementation specific */
-    /* These are used for parameter encrypt/decrypt */
-
-    /* The symmetric and hash algorithms to use */
-    TPMT_SYM_DEF symmetric;
-    TPMI_ALG_HASH authHash;
-
-    /* Optional object auth to append with session auth for encrypt/decrypt key */
-    TPM_HANDLE objHandle;
-    TPM2B_AUTH objAuth;
+    TPM2B_AUTH hmac;
 } TPMS_AUTH_COMMAND;
 
 typedef struct TPMS_AUTH_RESPONSE {
     TPM2B_NONCE nonce;
     TPMA_SESSION sessionAttributes;
-    TPM2B_AUTH auth;
+    TPM2B_AUTH hmac;
 } TPMS_AUTH_RESPONSE;
+
+/* Implementation specific authorization session information */
+typedef struct TPM2_AUTH_SESSION {
+    /* BEGIN */
+    /* This section should match TPMS_AUTH_COMMAND */
+    TPMI_SH_AUTH_SESSION sessionHandle;
+    TPM2B_NONCE nonceCaller;
+    TPMA_SESSION sessionAttributes;
+    TPM2B_AUTH auth;
+    /* END */
+
+    /* additional auth data required for implementation */
+    TPM2B_NONCE nonceTPM;
+    TPMT_SYM_DEF symmetric;
+    TPMI_ALG_HASH authHash;
+    TPM2B_NAME name;
+} TPM2_AUTH_SESSION;
+
 
 
 /* Predetermined TPM 2.0 Indexes */
@@ -1613,6 +1619,20 @@ static const BYTE TPM_20_EK_AUTH_POLICY[] = {
 /* HAL IO Callbacks */
 struct TPM2_CTX;
 
+#ifdef WOLFTPM_SWTPM
+struct wolfTPM_tcpContext {
+    int fd;
+};
+#endif /* WOLFTPM_SWTPM */
+
+#ifdef WOLFTPM_WINAPI
+#include <tbs.h>
+
+struct wolfTPM_winContext {
+  TBS_HCONTEXT tbs_context;
+};
+#endif /* WOLFTPM_SWTPM */
+
 /* make sure advanced IO is enabled for I2C */
 #ifdef WOLFTPM_I2C
     #undef  WOLFTPM_ADV_IO
@@ -1635,6 +1655,12 @@ typedef int (*TPM2HalIoCb)(struct TPM2_CTX*, const BYTE* txBuf, BYTE* rxBuf,
 typedef struct TPM2_CTX {
     TPM2HalIoCb ioCb;
     void* userCtx;
+#ifdef WOLFTPM_SWTPM
+    struct wolfTPM_tcpContext tcpCtx;
+#endif
+#ifdef WOLFTPM_WINAPI
+    struct wolfTPM_winContext winCtx;
+#endif
 #ifndef WOLFTPM2_NO_WOLFCRYPT
 #ifndef SINGLE_THREADED
     wolfSSL_Mutex hwLock;
@@ -1650,13 +1676,13 @@ typedef struct TPM2_CTX {
     word32 did_vid;
     byte rid;
 
-    /* Current TPM auth session */
-    TPMS_AUTH_COMMAND*  authCmd;
+    /* Pointer to current TPM auth sessions */
+    TPM2_AUTH_SESSION* session;
 
-    /* Command Buffer */
+    /* Command / Response Buffer */
     byte cmdBuf[MAX_COMMAND_SIZE];
 
-    /* Informational Bits */
+    /* Informational Bits - use unsigned int for best compiler compatibility */
 #ifndef WOLFTPM2_NO_WOLFCRYPT
     #ifndef SINGLE_THREADED
     unsigned int hwLockInit:1;
@@ -2736,6 +2762,12 @@ WOLFTPM_API int TPM2_SetMode(SetMode_In* in);
 
 /* Non-standard API's */
 #define _TPM_Init TPM2_Init
+/* When using devtpm or swtpm, the ioCb and userCtx are not used
+ * and should be NULL. TPM2_Init_minimal() calls TPM2_Init_ex()
+ * with them set to NULL.
+ *
+ * In other modes, the ioCb shall be set in order to use TIS.
+ */
 WOLFTPM_API TPM_RC TPM2_Init(TPM2_CTX* ctx, TPM2HalIoCb ioCb, void* userCtx);
 WOLFTPM_API TPM_RC TPM2_Init_ex(TPM2_CTX* ctx, TPM2HalIoCb ioCb, void* userCtx,
     int timeoutTries);
@@ -2744,8 +2776,13 @@ WOLFTPM_API TPM_RC TPM2_Cleanup(TPM2_CTX* ctx);
 
 /* Other API's - Not in TPM Specification */
 WOLFTPM_API TPM_RC TPM2_ChipStartup(TPM2_CTX* ctx, int timeoutTries);
+/* SetHalIoCb will fail if built with devtpm or swtpm as the callback
+ * is not used for TPM. For other configuration builds, ioCb must be
+ * set to a non-NULL function pointer and userCtx is optional.
+ */
 WOLFTPM_API TPM_RC TPM2_SetHalIoCb(TPM2_CTX* ctx, TPM2HalIoCb ioCb, void* userCtx);
-WOLFTPM_API TPM_RC TPM2_SetSessionAuth(TPMS_AUTH_COMMAND *cmd);
+WOLFTPM_API TPM_RC TPM2_SetSessionAuth(TPM2_AUTH_SESSION *session);
+WOLFTPM_API int    TPM2_GetSessionAuthCount(TPM2_CTX* ctx);
 
 WOLFTPM_API void      TPM2_SetActiveCtx(TPM2_CTX* ctx);
 WOLFTPM_API TPM2_CTX* TPM2_GetActiveCtx(void);
@@ -2763,6 +2800,7 @@ WOLFTPM_API int TPM2_GetTpmCurve(int curveID);
 WOLFTPM_API int TPM2_GetWolfCurve(int curve_id);
 
 WOLFTPM_API int TPM2_ParseAttest(const TPM2B_ATTEST* in, TPMS_ATTEST* out);
+WOLFTPM_LOCAL int TPM2_GetName(TPM2_CTX* ctx, int handleCnt, int idx, TPM2B_NAME* name);
 
 #ifdef WOLFTPM2_USE_WOLF_RNG
 WOLFTPM_API int TPM2_GetWolfRng(WC_RNG** rng);
