@@ -66,7 +66,7 @@ int TPM2_Timestamp_Test(void* userCtx)
     WOLFTPM2_KEY storage; /* SRK */
     WOLFTPM2_KEY rsaKey;  /* AIK */
 
-    TPMS_AUTH_COMMAND session[MAX_SESSION_NUM];
+    TPM2_AUTH_SESSION session[MAX_SESSION_NUM];
 
     XMEMSET(&endorse, 0, sizeof(endorse));
     XMEMSET(&storage, 0, sizeof(storage));

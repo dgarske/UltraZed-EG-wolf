@@ -46,7 +46,7 @@ int TPM2_ClockGet_Example(void* userCtx, UINT64* clockOut)
         byte maxOutput[MAX_RESPONSE_SIZE];
     } cmdOut;
 
-    TPMS_AUTH_COMMAND session[MAX_SESSION_NUM];
+    TPM2_AUTH_SESSION session[MAX_SESSION_NUM];
 
     xil_printf("TPM2 Demo of setting the TPM clock forward\r\n");
     rc = wolfTPM2_Init(&dev, TPM2_IoCb, userCtx);
@@ -106,7 +106,7 @@ int TPM2_ClockSet_Example(void* userCtx, UINT64* newClock)
         byte maxOutput[MAX_RESPONSE_SIZE];
     } cmdOut;
 
-    TPMS_AUTH_COMMAND session[MAX_SESSION_NUM];
+    TPM2_AUTH_SESSION session[MAX_SESSION_NUM];
 
     UINT64 oldClock;
 
