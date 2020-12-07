@@ -50,12 +50,12 @@
  * Run ./certs/certreq.sh
  * Result is: ./certs/server-rsa-cert.pem and ./certs/server-ecc-cert.pem
  *
- * This example server listens on port 11111 by default, but can be set at 
+ * This example server listens on port 11111 by default, but can be set at
  * build-time using `TLS_PORT`.
  *
- * By default this example will loads RSA keys unless RSA is disabled (NO_RSA) 
+ * By default this example will loads RSA keys unless RSA is disabled (NO_RSA)
  * or the TLS_USE_ECC build option is used.
- * 
+ *
  * You can validate using the wolfSSL example client this like:
  *  ./examples/client/client -h localhost -p 11111 -g -d
  *
@@ -137,10 +137,16 @@ int TPM2_TLS_ServerArgs(void* userCtx, int argc, char *argv[])
     sockIoCtx.fd = -1;
     XMEMSET(&tpmCtx, 0, sizeof(tpmCtx));
 #ifndef NO_RSA
+    XMEMSET(&rsaKey, 0, sizeof(rsaKey));
     XMEMSET(&wolfRsaKey, 0, sizeof(wolfRsaKey));
 #endif
 #ifdef HAVE_ECC
+    XMEMSET(&eccKey, 0, sizeof(eccKey));
     XMEMSET(&wolfEccKey, 0, sizeof(wolfEccKey));
+    #ifndef WOLFTPM2_USE_SW_ECDHE
+    /* Ephemeral Key */
+    XMEMSET(&ecdhKey, 0, sizeof(ecdhKey));
+    #endif
 #endif
     XMEMSET(&tpmSession, 0, sizeof(tpmSession));
 
@@ -204,10 +210,10 @@ int TPM2_TLS_ServerArgs(void* userCtx, int argc, char *argv[])
             (word32)tpmSession.handle.hndl);
 
         /* set session for authorization of the storage key */
-        rc = wolfTPM2_SetAuthSession(&dev, 1, &tpmSession, 
+        rc = wolfTPM2_SetAuthSession(&dev, 1, &tpmSession,
             (TPMA_SESSION_decrypt | TPMA_SESSION_encrypt | TPMA_SESSION_continueSession));
         if (rc != 0) goto exit;
-    }    
+    }
 
 #ifndef NO_RSA
     if (!useECC) {
@@ -236,7 +242,6 @@ int TPM2_TLS_ServerArgs(void* userCtx, int argc, char *argv[])
 
     #ifndef WOLFTPM2_USE_SW_ECDHE
     /* Ephemeral Key */
-    XMEMSET(&ecdhKey, 0, sizeof(ecdhKey));
     tpmCtx.ecdhKey = &ecdhKey;
     #endif
 #endif /* HAVE_ECC */
@@ -497,6 +502,7 @@ exit:
     wc_ecc_free(&wolfEccKey);
     wolfTPM2_UnloadHandle(&dev, &eccKey.handle);
 #endif
+    wolfTPM2_UnloadHandle(&dev, &tpmSession.handle);
 
     wolfTPM2_Cleanup(&dev);
 

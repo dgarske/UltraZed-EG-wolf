@@ -370,7 +370,7 @@ int wolfTPM2_GetCapabilities(WOLFTPM2_DEV* dev, WOLFTPM2_CAPS* cap)
 }
 
 int wolfTPM2_SetAuth(WOLFTPM2_DEV* dev, int index,
-    TPM_HANDLE sessionHandle, const TPM2B_AUTH* auth, 
+    TPM_HANDLE sessionHandle, const TPM2B_AUTH* auth,
     TPMA_SESSION sessionAttributes, const TPM2B_NAME* name)
 {
     TPM2_AUTH_SESSION* session;
@@ -397,13 +397,13 @@ int wolfTPM2_SetAuth(WOLFTPM2_DEV* dev, int index,
     return TPM_RC_SUCCESS;
 }
 
-int wolfTPM2_SetAuthPassword(WOLFTPM2_DEV* dev, int index, 
+int wolfTPM2_SetAuthPassword(WOLFTPM2_DEV* dev, int index,
     const TPM2B_AUTH* auth)
 {
     return wolfTPM2_SetAuth(dev, index, TPM_RS_PW, auth, 0, NULL);
 }
 
-int wolfTPM2_SetAuthHandle(WOLFTPM2_DEV* dev, int index, 
+int wolfTPM2_SetAuthHandle(WOLFTPM2_DEV* dev, int index,
     const WOLFTPM2_HANDLE* handle)
 {
     const TPM2B_AUTH* auth = NULL;
@@ -415,13 +415,19 @@ int wolfTPM2_SetAuthHandle(WOLFTPM2_DEV* dev, int index,
     return wolfTPM2_SetAuth(dev, index, TPM_RS_PW, auth, 0, name);
 }
 
-int wolfTPM2_SetAuthSession(WOLFTPM2_DEV* dev, int index, 
+int wolfTPM2_SetAuthSession(WOLFTPM2_DEV* dev, int index,
     const WOLFTPM2_SESSION* tpmSession, TPMA_SESSION sessionAttributes)
 {
     int rc;
 
     if (dev == NULL || index >= MAX_SESSION_NUM) {
         return BAD_FUNC_ARG;
+    }
+
+    if (tpmSession == NULL) {
+        /* clearing auth session */
+        XMEMSET(&dev->session[index], 0, sizeof(TPM2_AUTH_SESSION));
+        return TPM_RC_SUCCESS;
     }
 
     rc = wolfTPM2_SetAuth(dev, index, tpmSession->handle.hndl,
@@ -438,7 +444,7 @@ int wolfTPM2_SetAuthSession(WOLFTPM2_DEV* dev, int index,
 
         /* Capture TPM provided nonce */
         session->nonceTPM.size = tpmSession->nonceTPM.size;
-        XMEMCPY(session->nonceTPM.buffer, tpmSession->nonceTPM.buffer, 
+        XMEMCPY(session->nonceTPM.buffer, tpmSession->nonceTPM.buffer,
             session->nonceTPM.size);
     }
     return rc;
@@ -575,6 +581,11 @@ int wolfTPM2_EncryptSalt(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* tpmKey,
         return rc;
     }
 
+#ifdef WOLFTPM_DEBUG_VERBOSE
+    printf("Session Salt %d\n", salt->size);
+    TPM2_PrintBin(salt->buffer, salt->size);
+#endif
+
     switch (tpmKey->pub.publicArea.type) {
     #ifdef HAVE_ECC
         case TPM_ALG_ECC:
@@ -646,7 +657,7 @@ int wolfTPM2_StartSession(WOLFTPM2_DEV* dev, WOLFTPM2_SESSION* session,
         authSesIn.symmetric.keyBits.aes = 128;
         authSesIn.symmetric.mode.aes = TPM_ALG_CFB;
     }
-    else 
+    else
 #endif
     if (encDecAlg == TPM_ALG_XOR) {
         authSesIn.symmetric.algorithm = TPM_ALG_XOR;
@@ -697,10 +708,10 @@ int wolfTPM2_StartSession(WOLFTPM2_DEV* dev, WOLFTPM2_SESSION* session,
         XMEMCPY(&keyIn.buffer[keyIn.size], session->salt.buffer, session->salt.size);
         keyIn.size += session->salt.size;
     }
-        
+
     if (keyIn.size > 0) {
         session->handle.auth.size = hashDigestSz;
-        rc = TPM2_KDFa(authSesIn.authHash, &keyIn, "ATH", 
+        rc = TPM2_KDFa(authSesIn.authHash, &keyIn, "ATH",
             &authSesOut.nonceTPM, &authSesIn.nonceCaller,
             session->handle.auth.buffer, session->handle.auth.size);
         if (rc != hashDigestSz) {
@@ -711,6 +722,12 @@ int wolfTPM2_StartSession(WOLFTPM2_DEV* dev, WOLFTPM2_SESSION* session,
         }
         rc = TPM_RC_SUCCESS;
     }
+
+#ifdef WOLFTPM_DEBUG_VERBOSE
+    printf("Session Key %d\n", session->handle.auth.size);
+    TPM2_PrintBin(session->handle.auth.buffer, session->handle.auth.size);
+#endif
+
 
     /* return session */
     session->type = authSesIn.sessionType;
@@ -828,7 +845,7 @@ int wolfTPM2_ChangeAuthKey(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* key,
 
     /* set session auth for parent key */
     wolfTPM2_SetAuthHandle(dev, 0, parent);
-    
+
     /* Load new key */
     XMEMSET(&loadIn, 0, sizeof(loadIn));
     loadIn.parentHandle = parent->hndl;
@@ -893,7 +910,7 @@ int wolfTPM2_CreateKey(WOLFTPM2_DEV* dev, WOLFTPM2_KEYBLOB* keyBlob,
     }
 
 #ifdef DEBUG_WOLFTPM
-    printf("TPM2_Create key: pub %d, priv %d\n", 
+    printf("TPM2_Create key: pub %d, priv %d\n",
         createOut.outPublic.size, createOut.outPrivate.size);
     TPM2_PrintBin(createOut.outPrivate.buffer, createOut.outPrivate.size);
 #endif
@@ -919,7 +936,7 @@ int wolfTPM2_LoadKey(WOLFTPM2_DEV* dev, WOLFTPM2_KEYBLOB* keyBlob,
 
     /* set session auth for parent key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = parent->auth;
+        wolfTPM2_SetAuthHandle(dev, 0, parent);
     }
 
     /* Load new key */
@@ -1198,7 +1215,7 @@ int wolfTPM2_SensitiveToPrivate(TPM2B_SENSITIVE* sens, TPM2B_PRIVATE* priv,
 }
 
 /* Import external private key */
-int wolfTPM2_ImportPrivateKey(WOLFTPM2_DEV* dev, const WOLFTPM2_KEY* parentKey, 
+int wolfTPM2_ImportPrivateKey(WOLFTPM2_DEV* dev, const WOLFTPM2_KEY* parentKey,
     WOLFTPM2_KEYBLOB* keyBlob, const TPM2B_PUBLIC* pub, TPM2B_SENSITIVE* sens)
 {
     int rc;
@@ -1513,12 +1530,12 @@ int wolfTPM2_LoadEccPrivateKey(WOLFTPM2_DEV* dev, const WOLFTPM2_KEY* parentKey,
     }
 
     XMEMCPY(&keyBlob, key, sizeof(WOLFTPM2_KEY));
-    rc = wolfTPM2_ImportEccPrivateKey(dev, parentKey, &keyBlob, curveId, 
+    rc = wolfTPM2_ImportEccPrivateKey(dev, parentKey, &keyBlob, curveId,
         eccPubX, eccPubXSz, eccPubY, eccPubYSz, eccPriv, eccPrivSz);
     if (rc == 0) {
         rc = wolfTPM2_LoadKey(dev, &keyBlob, (WOLFTPM2_HANDLE*)&parentKey->handle);
     }
-    
+
     /* return loaded key */
     XMEMCPY(key, &keyBlob, sizeof(WOLFTPM2_KEY));
 
@@ -2178,9 +2195,7 @@ int wolfTPM2_ECDHGenZ(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* privKey,
 
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = privKey->handle.auth;
-        dev->ctx.session[0].symmetric =
-            privKey->pub.publicArea.parameters.eccDetail.symmetric;
+        wolfTPM2_SetAuthHandle(dev, 0, &privKey->handle);
     }
 
     XMEMSET(&ecdhZIn, 0, sizeof(ecdhZIn));
@@ -2262,9 +2277,7 @@ int wolfTPM2_ECDHEGenZ(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* parentKey,
 
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = parentKey->handle.auth;
-        dev->ctx.session[0].symmetric =
-            parentKey->pub.publicArea.parameters.eccDetail.symmetric;
+        wolfTPM2_SetAuthHandle(dev, 0, &parentKey->handle);
     }
 
     XMEMSET(&inZGen2Ph, 0, sizeof(inZGen2Ph));
@@ -2310,9 +2323,7 @@ int wolfTPM2_RsaEncrypt(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* key,
 
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = key->handle.auth;
-        dev->ctx.session[0].symmetric =
-            key->pub.publicArea.parameters.rsaDetail.symmetric;
+        wolfTPM2_SetAuthHandle(dev, 0, &key->handle);
     }
 
     /* RSA Encrypt */
@@ -2361,11 +2372,9 @@ int wolfTPM2_RsaDecrypt(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* key,
         return BAD_FUNC_ARG;
     }
 
-    /* set session auth for key */
+    /* set session auth and name for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = key->handle.auth;
-        dev->ctx.session[0].symmetric =
-            key->pub.publicArea.parameters.rsaDetail.symmetric;
+        wolfTPM2_SetAuthHandle(dev, 0, &key->handle);
     }
 
     /* RSA Decrypt */
@@ -2413,10 +2422,10 @@ int wolfTPM2_ReadPCR(WOLFTPM2_DEV* dev, int pcrIndex, int hashAlg, byte* digest,
 
     if (dev == NULL)
         return BAD_FUNC_ARG;
-    
+
     /* set session auth to blank */
     if (dev->ctx.session) {
-        XMEMSET(&dev->ctx.session[0].auth, 0, sizeof(TPM2B_AUTH));
+        wolfTPM2_SetAuthPassword(dev, 0, NULL);
     }
 
     wolfTPM2_SetupPCRSel(&pcrReadIn.pcrSelectionIn, hashAlg, pcrIndex);
@@ -2521,7 +2530,7 @@ int wolfTPM2_NVCreateAuth(WOLFTPM2_DEV* dev, WOLFTPM2_HANDLE* parent,
 
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = parent->auth;
+        wolfTPM2_SetAuthHandle(dev, 0, parent);
     }
 
     XMEMSET(&in, 0, sizeof(in));
@@ -2590,10 +2599,10 @@ int wolfTPM2_NVWriteAuth(WOLFTPM2_DEV* dev, WOLFTPM2_NV* nv,
 
     if (dev == NULL || nv == NULL)
         return BAD_FUNC_ARG;
-    
+
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = nv->handle.auth;
+        wolfTPM2_SetAuthHandle(dev, 0, &nv->handle);
     }
 
     while (dataSz > 0) {
@@ -2650,10 +2659,10 @@ int wolfTPM2_NVReadAuth(WOLFTPM2_DEV* dev, WOLFTPM2_NV* nv,
 
     if (dev == NULL || nv == NULL || pDataSz == NULL)
         return BAD_FUNC_ARG;
-    
+
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = nv->handle.auth;
+        wolfTPM2_SetAuthHandle(dev, 0, &nv->handle);
     }
 
     dataSz = *pDataSz;
@@ -2763,7 +2772,7 @@ int wolfTPM2_NVDeleteAuth(WOLFTPM2_DEV* dev, WOLFTPM2_HANDLE* parent,
 
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = parent->auth;
+        wolfTPM2_SetAuthHandle(dev, 0, parent);
     }
 
     XMEMSET(&in, 0, sizeof(in));
@@ -2894,6 +2903,7 @@ int wolfTPM2_HashStart(WOLFTPM2_DEV* dev, WOLFTPM2_HASH* hash,
     /* Capture usage auth */
     if (usageAuthSz > sizeof(hash->handle.auth.buffer))
         usageAuthSz = sizeof(hash->handle.auth.buffer);
+    XMEMSET(hash, 0, sizeof(WOLFTPM2_HASH));
     hash->handle.auth.size = usageAuthSz;
     XMEMCPY(hash->handle.auth.buffer, usageAuth, usageAuthSz);
 
@@ -2934,7 +2944,7 @@ int wolfTPM2_HashUpdate(WOLFTPM2_DEV* dev, WOLFTPM2_HASH* hash,
 
     /* set session auth for hash handle */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = hash->handle.auth;
+        wolfTPM2_SetAuthHandle(dev, 0, &hash->handle);
     }
 
     XMEMSET(&in, 0, sizeof(in));
@@ -2980,7 +2990,7 @@ int wolfTPM2_HashFinish(WOLFTPM2_DEV* dev, WOLFTPM2_HASH* hash,
 
     /* set session auth for hash handle */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = hash->handle.auth;
+        wolfTPM2_SetAuthHandle(dev, 0, &hash->handle);
     }
 
     XMEMSET(&in, 0, sizeof(in));
@@ -3179,7 +3189,7 @@ int wolfTPM2_EncryptDecryptBlock(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* key,
 
     /* set session auth for key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = key->handle.auth;
+        wolfTPM2_SetAuthHandle(dev, 0, &key->handle);
     }
 
     XMEMSET(&encDecIn, 0, sizeof(encDecIn));
@@ -3322,7 +3332,7 @@ int wolfTPM2_LoadKeyedHashKey(WOLFTPM2_DEV* dev, WOLFTPM2_KEY* key,
 
     /* set session auth for parent key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = parent->auth;
+        wolfTPM2_SetAuthHandle(dev, 0, parent);
     }
 
     XMEMSET(&createIn, 0, sizeof(createIn));
@@ -3410,7 +3420,7 @@ int wolfTPM2_HmacStart(WOLFTPM2_DEV* dev, WOLFTPM2_HMAC* hmac,
 
     /* set session auth for hmac key */
     if (dev->ctx.session) {
-        dev->ctx.session[0].auth = hmac->hash.handle.auth;
+        wolfTPM2_SetAuthHandle(dev, 0, &hmac->hash.handle);
     }
 
     /* Setup HMAC start command */
@@ -3622,6 +3632,10 @@ int wolfTPM2_GetKeyTemplate_Symmetric(TPMT_PUBLIC* publicTemplate, int keyBits,
 {
     if (publicTemplate == NULL)
         return BAD_FUNC_ARG;
+
+#ifdef WOLFTPM_MCHP
+    isSign = 0; /* Microchip TPM does not like "sign" set for symmetric keys */
+#endif
 
     XMEMSET(publicTemplate, 0, sizeof(TPMT_PUBLIC));
     publicTemplate->type = TPM_ALG_SYMCIPHER;
@@ -4010,6 +4024,7 @@ int wolfTPM2_CryptoDevCb(int devId, wc_CryptoInfo* info, void* ctx)
                     /* otherwise load public key and perform public op */
 
                     /* load public key into TPM */
+                    XMEMSET(&rsaPub, 0, sizeof(rsaPub));
                     rc = wolfTPM2_RsaKey_WolfToTpm(tlsCtx->dev,
                         info->pk.rsa.key, &rsaPub);
                     if (rc != 0) {

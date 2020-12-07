@@ -58,8 +58,8 @@
  *
  * This example client connects to localhost on on port 11111 by default.
  * These can be overriden using `TLS_HOST` and `TLS_PORT`.
- * 
- * By default this example will loads RSA keys unless RSA is disabled (NO_RSA) 
+ *
+ * By default this example will loads RSA keys unless RSA is disabled (NO_RSA)
  * or the TLS_USE_ECC build option is used.
  *
  * You can validate using the wolfSSL example server this like:
@@ -130,9 +130,11 @@ int TPM2_TLS_ClientArgs(void* userCtx, int argc, char *argv[])
     sockIoCtx.fd = -1;
     XMEMSET(&tpmCtx, 0, sizeof(tpmCtx));
 #ifndef NO_RSA
+    XMEMSET(&rsaKey, 0, sizeof(rsaKey));
     XMEMSET(&wolfRsaKey, 0, sizeof(wolfRsaKey));
 #endif
 #ifdef HAVE_ECC
+    XMEMSET(&eccKey, 0, sizeof(eccKey));
     XMEMSET(&wolfEccKey, 0, sizeof(wolfEccKey));
 #endif
     XMEMSET(&tpmSession, 0, sizeof(tpmSession));
@@ -196,7 +198,7 @@ int TPM2_TLS_ClientArgs(void* userCtx, int argc, char *argv[])
             (word32)tpmSession.handle.hndl);
 
         /* set session for authorization of the storage key */
-        rc = wolfTPM2_SetAuthSession(&dev, 1, &tpmSession, 
+        rc = wolfTPM2_SetAuthSession(&dev, 1, &tpmSession,
             (TPMA_SESSION_decrypt | TPMA_SESSION_encrypt | TPMA_SESSION_continueSession));
         if (rc != 0) goto exit;
     }
@@ -293,7 +295,7 @@ int TPM2_TLS_ClientArgs(void* userCtx, int argc, char *argv[])
         rc = -1;
         goto exit;
     #endif /* !NO_RSA */
-    } 
+    }
     else {
     #ifdef HAVE_ECC
         if (wolfSSL_CTX_load_verify_locations(ctx, "./certs/ca-ecc-cert.pem",
@@ -315,7 +317,7 @@ int TPM2_TLS_ClientArgs(void* userCtx, int argc, char *argv[])
 #endif /* !NO_FILESYSTEM */
 
     /* Client Key (Mutual Authentication) */
-    /* Note: Client will not send a client certificate unless a private key is 
+    /* Note: Client will not send a client certificate unless a private key is
      *   set, so we use a fake "DUMMY" key tell wolfSSL to send certificate.
      *   The crypto callback will detect use of the dummy key using myTpmCheckKey
      */
@@ -523,6 +525,7 @@ exit:
     wc_ecc_free(&wolfEccKey);
     wolfTPM2_UnloadHandle(&dev, &eccKey.handle);
 #endif
+    wolfTPM2_UnloadHandle(&dev, &tpmSession.handle);
 
     wolfSSL_shutdown(ssl);
 
