@@ -170,7 +170,7 @@ static int wolfBoot_update(int fallback_allowed)
         return -1;
 
     /* Check the first sector to detect interrupted update */
-    if ((wolfBoot_get_sector_flag(PART_UPDATE, 0, &flag) < 0) || (flag == SECT_FLAG_NEW))
+    if ((wolfBoot_get_update_sector_flag(0, &flag) < 0) || (flag == SECT_FLAG_NEW))
     {
         uint16_t update_type;
         /* In case this is a new update, do the required
@@ -197,16 +197,17 @@ static int wolfBoot_update(int fallback_allowed)
     ext_flash_unlock();
 #endif
 
+#ifndef DISABLE_BACKUP
     /* Interruptible swap
      * The status is saved in the sector flags of the update partition.
      * If something goes wrong, the operation will be resumed upon reboot.
      */
     while ((sector * sector_size) < total_size) {
-        if ((wolfBoot_get_sector_flag(PART_UPDATE, sector, &flag) != 0) || (flag == SECT_FLAG_NEW)) {
+        if ((wolfBoot_get_update_sector_flag(sector, &flag) != 0) || (flag == SECT_FLAG_NEW)) {
            flag = SECT_FLAG_SWAPPING;
            wolfBoot_copy_sector(&update, &swap, sector);
            if (((sector + 1) * sector_size) < WOLFBOOT_PARTITION_SIZE)
-               wolfBoot_set_sector_flag(PART_UPDATE, sector, flag);
+               wolfBoot_set_update_sector_flag(sector, flag);
         }
         if (flag == SECT_FLAG_SWAPPING) {
             uint32_t size = total_size - (sector * sector_size);
@@ -215,7 +216,7 @@ static int wolfBoot_update(int fallback_allowed)
             flag = SECT_FLAG_BACKUP;
             wolfBoot_copy_sector(&boot, &update, sector);
            if (((sector + 1) * sector_size) < WOLFBOOT_PARTITION_SIZE)
-                wolfBoot_set_sector_flag(PART_UPDATE, sector, flag);
+                wolfBoot_set_update_sector_flag(sector, flag);
         }
         if (flag == SECT_FLAG_BACKUP) {
             uint32_t size = total_size - (sector * sector_size);
@@ -224,7 +225,7 @@ static int wolfBoot_update(int fallback_allowed)
             flag = SECT_FLAG_UPDATED;
             wolfBoot_copy_sector(&swap, &boot, sector);
             if (((sector + 1) * sector_size) < WOLFBOOT_PARTITION_SIZE)
-                wolfBoot_set_sector_flag(PART_UPDATE, sector, flag);
+                wolfBoot_set_update_sector_flag(sector, flag);
         }
         sector++;
     }
@@ -236,6 +237,29 @@ static int wolfBoot_update(int fallback_allowed)
     wb_flash_erase(&swap, 0, WOLFBOOT_SECTOR_SIZE);
     st = IMG_STATE_TESTING;
     wolfBoot_set_partition_state(PART_BOOT, st);
+#else /* DISABLE_BACKUP */
+#warning "Backup mechanism disabled! Update installation will not be interruptible"
+    /* Directly copy the content of the UPDATE partition into the BOOT partition.
+     * This mechanism is not fail-safe, and will brick your device if interrupted
+     * before the copy is finished.
+     */
+    while ((sector * sector_size) < total_size) {
+        if ((wolfBoot_get_update_sector_flag(sector, &flag) != 0) || (flag == SECT_FLAG_NEW)) {
+           flag = SECT_FLAG_SWAPPING;
+           wolfBoot_copy_sector(&update, &boot, sector);
+           if (((sector + 1) * sector_size) < WOLFBOOT_PARTITION_SIZE)
+               wolfBoot_set_update_sector_flag(sector, flag);
+        }
+        sector++;
+    }
+    while((sector * sector_size) < WOLFBOOT_PARTITION_SIZE) {
+        wb_flash_erase(&boot, sector * sector_size, sector_size);
+        sector++;
+    }
+    st = IMG_STATE_SUCCESS;
+    wolfBoot_set_partition_state(PART_BOOT, st);
+#endif
+
 #ifdef EXT_FLASH
     ext_flash_lock();
 #endif

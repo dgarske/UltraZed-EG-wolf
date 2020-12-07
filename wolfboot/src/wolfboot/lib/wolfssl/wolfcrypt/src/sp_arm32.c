@@ -4773,7 +4773,7 @@ static int32_t sp_2048_cmp_32(const sp_digit* a, const sp_digit* b)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -4908,26 +4908,37 @@ static int sp_2048_mod_exp_32(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 28;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 32);
         for (; i>=0 || c>=4; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n <<= 4;
                 c = 28;
             }
             else if (c < 4) {
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n = e[i--];
                 c = 4 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 28) & 0xf;
+                y = (int)((n >> 28) & 0xf);
                 n <<= 4;
                 c -= 4;
             }
@@ -5058,26 +5069,37 @@ static int sp_2048_mod_exp_32(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 32);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -6983,7 +7005,7 @@ static int32_t sp_2048_cmp_64(const sp_digit* a, const sp_digit* b)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -7035,7 +7057,7 @@ static WC_INLINE int sp_2048_mod_64(sp_digit* r, const sp_digit* a, const sp_dig
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -7173,26 +7195,37 @@ static int sp_2048_mod_exp_64(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 28;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 64);
         for (; i>=0 || c>=4; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n <<= 4;
                 c = 28;
             }
             else if (c < 4) {
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n = e[i--];
                 c = 4 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 28) & 0xf;
+                y = (int)((n >> 28) & 0xf);
                 n <<= 4;
                 c -= 4;
             }
@@ -7323,26 +7356,37 @@ static int sp_2048_mod_exp_64(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 64);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -8457,26 +8501,37 @@ static int sp_2048_mod_exp_2_64(sp_digit* r, const sp_digit* e, int bits,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         sp_2048_lshift_64(r, norm, y);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -15532,7 +15587,7 @@ static int32_t sp_3072_cmp_48(const sp_digit* a, const sp_digit* b)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -15667,26 +15722,37 @@ static int sp_3072_mod_exp_48(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 28;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 48);
         for (; i>=0 || c>=4; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n <<= 4;
                 c = 28;
             }
             else if (c < 4) {
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n = e[i--];
                 c = 4 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 28) & 0xf;
+                y = (int)((n >> 28) & 0xf);
                 n <<= 4;
                 c -= 4;
             }
@@ -15817,26 +15883,37 @@ static int sp_3072_mod_exp_48(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 48);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -18542,7 +18619,7 @@ static int32_t sp_3072_cmp_96(const sp_digit* a, const sp_digit* b)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -18594,7 +18671,7 @@ static WC_INLINE int sp_3072_mod_96(sp_digit* r, const sp_digit* a, const sp_dig
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -18732,26 +18809,37 @@ static int sp_3072_mod_exp_96(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 28;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 96);
         for (; i>=0 || c>=4; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n <<= 4;
                 c = 28;
             }
             else if (c < 4) {
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n = e[i--];
                 c = 4 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 28) & 0xf;
+                y = (int)((n >> 28) & 0xf);
                 n <<= 4;
                 c -= 4;
             }
@@ -18882,26 +18970,37 @@ static int sp_3072_mod_exp_96(sp_digit* r, const sp_digit* a, const sp_digit* e,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 96);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -20288,26 +20387,37 @@ static int sp_3072_mod_exp_2_96(sp_digit* r, const sp_digit* e, int bits,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         sp_3072_lshift_96(r, norm, y);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -26529,7 +26639,7 @@ static int32_t sp_4096_cmp_128(const sp_digit* a, const sp_digit* b)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -26581,7 +26691,7 @@ static WC_INLINE int sp_4096_mod_128(sp_digit* r, const sp_digit* a, const sp_di
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -26719,26 +26829,37 @@ static int sp_4096_mod_exp_128(sp_digit* r, const sp_digit* a, const sp_digit* e
         if (c == 32) {
             c = 28;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 128);
         for (; i>=0 || c>=4; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n <<= 4;
                 c = 28;
             }
             else if (c < 4) {
-                y = n >> 28;
+                y = (int)(n >> 28);
                 n = e[i--];
                 c = 4 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 28) & 0xf;
+                y = (int)((n >> 28) & 0xf);
                 n <<= 4;
                 c -= 4;
             }
@@ -26869,26 +26990,37 @@ static int sp_4096_mod_exp_128(sp_digit* r, const sp_digit* a, const sp_digit* e
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         XMEMCPY(r, t[y], sizeof(sp_digit) * 128);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -28547,26 +28679,37 @@ static int sp_4096_mod_exp_2_128(sp_digit* r, const sp_digit* e, int bits,
         if (c == 32) {
             c = 27;
         }
-        y = (int)(n >> c);
-        n <<= 32 - c;
+        if (c < 0) {
+            /* Number of bits in top word is less than number needed. */
+            c = -c;
+            y = (int)(n << c);
+            n = e[i--];
+            y |= (int)(n >> (64 - c));
+            n <<= c;
+            c = 64 - c;
+        }
+        else {
+            y = (int)(n >> c);
+            n <<= 32 - c;
+        }
         sp_4096_lshift_128(r, norm, y);
         for (; i>=0 || c>=5; ) {
             if (c == 0) {
                 n = e[i--];
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n <<= 5;
                 c = 27;
             }
             else if (c < 5) {
-                y = n >> 27;
+                y = (int)(n >> 27);
                 n = e[i--];
                 c = 5 - c;
-                y |= n >> (32 - c);
+                y |= (int)(n >> (32 - c));
                 n <<= c;
                 c = 32 - c;
             }
             else {
-                y = (n >> 27) & 0x1f;
+                y = (int)((n >> 27) & 0x1f);
                 n <<= 5;
                 c -= 5;
             }
@@ -35763,7 +35906,7 @@ static void sp_256_mask_8(sp_digit* r, const sp_digit* a, sp_digit m)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -44961,7 +45104,7 @@ static void sp_384_mask_12(sp_digit* r, const sp_digit* a, sp_digit m)
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.

@@ -1029,8 +1029,8 @@ SP_NOINLINE static void sp_2048_mul_90(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -1065,8 +1065,8 @@ SP_NOINLINE static void sp_2048_sqr_90(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -1172,8 +1172,8 @@ SP_NOINLINE static void sp_2048_mul_45(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -1208,8 +1208,8 @@ SP_NOINLINE static void sp_2048_sqr_45(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -1427,7 +1427,7 @@ SP_NOINLINE static void sp_2048_mul_add_45(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x7fffff;
         t >>= 23;
     }
-    r[45] += t;
+    r[45] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[8];
@@ -1777,7 +1777,7 @@ static WC_INLINE sp_digit sp_2048_div_word_45(sp_digit d1, sp_digit d0,
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -2353,7 +2353,7 @@ SP_NOINLINE static void sp_2048_mul_add_90(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x7fffff;
         t >>= 23;
     }
-    r[90] += t;
+    r[90] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[8];
@@ -2472,7 +2472,7 @@ static void sp_2048_mont_reduce_90(sp_digit* a, const sp_digit* m, sp_digit mp)
 
     sp_2048_norm_90(a + 90);
 
-#ifdef WOLFSSL_SP_DH
+#ifdef WOLFSSL_HAVE_SP_DH
     if (mp != 1) {
         for (i=0; i<89; i++) {
             mu = (a[i] * mp) & 0x7fffff;
@@ -2728,7 +2728,7 @@ static WC_INLINE sp_digit sp_2048_div_word_90(sp_digit d1, sp_digit d0,
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -4914,8 +4914,8 @@ SP_NOINLINE static void sp_3072_mul_134(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -4950,8 +4950,8 @@ SP_NOINLINE static void sp_3072_sqr_134(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -5055,8 +5055,8 @@ SP_NOINLINE static void sp_3072_mul_67(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -5091,8 +5091,8 @@ SP_NOINLINE static void sp_3072_sqr_67(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 46;
-        r[k + 1] = (c >> 23) & 0x7fffff;
+        r[k + 2] += (sp_digit)(c >> 46);
+        r[k + 1] = (sp_digit)((c >> 23) & 0x7fffff);
         c = (c & 0x7fffff) << 23;
     }
     r[0] = (sp_digit)(c >> 23);
@@ -5312,7 +5312,7 @@ SP_NOINLINE static void sp_3072_mul_add_67(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x7fffff;
         t >>= 23;
     }
-    r[67] += t;
+    r[67] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[8];
@@ -6206,7 +6206,7 @@ SP_NOINLINE static void sp_3072_mul_add_134(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x7fffff;
         t >>= 23;
     }
-    r[134] += t;
+    r[134] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[8];
@@ -6341,7 +6341,7 @@ static void sp_3072_mont_reduce_134(sp_digit* a, const sp_digit* m, sp_digit mp)
 
     sp_3072_norm_134(a + 134);
 
-#ifdef WOLFSSL_SP_DH
+#ifdef WOLFSSL_HAVE_SP_DH
     if (mp != 1) {
         for (i=0; i<133; i++) {
             mu = (a[i] * mp) & 0x7fffff;
@@ -6605,7 +6605,7 @@ static WC_INLINE sp_digit sp_3072_div_word_134(sp_digit d1, sp_digit d0,
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -8971,8 +8971,8 @@ SP_NOINLINE static void sp_4096_mul_196(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 42;
-        r[k + 1] = (c >> 21) & 0x1fffff;
+        r[k + 2] += (sp_digit)(c >> 42);
+        r[k + 1] = (sp_digit)((c >> 21) & 0x1fffff);
         c = (c & 0x1fffff) << 21;
     }
     r[0] = (sp_digit)(c >> 21);
@@ -9007,8 +9007,8 @@ SP_NOINLINE static void sp_4096_sqr_196(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 42;
-        r[k + 1] = (c >> 21) & 0x1fffff;
+        r[k + 2] += (sp_digit)(c >> 42);
+        r[k + 1] = (sp_digit)((c >> 21) & 0x1fffff);
         c = (c & 0x1fffff) << 21;
     }
     r[0] = (sp_digit)(c >> 21);
@@ -9084,8 +9084,8 @@ SP_NOINLINE static void sp_4096_mul_98(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 42;
-        r[k + 1] = (c >> 21) & 0x1fffff;
+        r[k + 2] += (sp_digit)(c >> 42);
+        r[k + 1] = (sp_digit)((c >> 21) & 0x1fffff);
         c = (c & 0x1fffff) << 21;
     }
     r[0] = (sp_digit)(c >> 21);
@@ -9120,8 +9120,8 @@ SP_NOINLINE static void sp_4096_sqr_98(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 42;
-        r[k + 1] = (c >> 21) & 0x1fffff;
+        r[k + 2] += (sp_digit)(c >> 42);
+        r[k + 1] = (sp_digit)((c >> 21) & 0x1fffff);
         c = (c & 0x1fffff) << 21;
     }
     r[0] = (sp_digit)(c >> 21);
@@ -9336,7 +9336,7 @@ SP_NOINLINE static void sp_4096_mul_add_98(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x1fffff;
         t >>= 21;
     }
-    r[98] += t;
+    r[98] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[8];
@@ -9682,7 +9682,7 @@ static WC_INLINE sp_digit sp_4096_div_word_98(sp_digit d1, sp_digit d0,
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -10265,7 +10265,7 @@ SP_NOINLINE static void sp_4096_mul_add_196(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x1fffff;
         t >>= 21;
     }
-    r[196] += t;
+    r[196] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[8];
@@ -10392,7 +10392,7 @@ static void sp_4096_mont_reduce_196(sp_digit* a, const sp_digit* m, sp_digit mp)
 
     sp_4096_norm_196(a + 196);
 
-#ifdef WOLFSSL_SP_DH
+#ifdef WOLFSSL_HAVE_SP_DH
     if (mp != 1) {
         for (i=0; i<195; i++) {
             mu = (a[i] * mp) & 0x1fffff;
@@ -10646,7 +10646,7 @@ static WC_INLINE sp_digit sp_4096_div_word_196(sp_digit d1, sp_digit d0,
 /* Divide d in a and put remainder into r (m*d + r = a)
  * m is not calculated as it is not needed at this time.
  *
- * a  Nmber to be divided.
+ * a  Number to be divided.
  * d  Number to divide with.
  * m  Multiplier result.
  * r  Remainder from the division.
@@ -12718,26 +12718,26 @@ static int sp_256_mod_mul_norm_10(sp_digit* r, const sp_digit* a, const sp_digit
 
         r[0] = (sp_digit)(t[0]) & 0x3ffffffL;
         r[1] = (sp_digit)(t[0] >> 26U);
-        r[1] |= t[1] << 6U;
+        r[1] |= (sp_digit)(t[1] << 6U);
         r[1] &= 0x3ffffffL;
         r[2] = (sp_digit)(t[1] >> 20U);
-        r[2] |= t[2] << 12U;
+        r[2] |= (sp_digit)(t[2] << 12U);
         r[2] &= 0x3ffffffL;
         r[3] = (sp_digit)(t[2] >> 14U);
-        r[3] |= t[3] << 18U;
+        r[3] |= (sp_digit)(t[3] << 18U);
         r[3] &= 0x3ffffffL;
         r[4] = (sp_digit)(t[3] >> 8U);
-        r[4] |= t[4] << 24U;
+        r[4] |= (sp_digit)(t[4] << 24U);
         r[4] &= 0x3ffffffL;
         r[5] = (sp_digit)(t[4] >> 2U) & 0x3ffffffL;
         r[6] = (sp_digit)(t[4] >> 28U);
-        r[6] |= t[5] << 4U;
+        r[6] |= (sp_digit)(t[5] << 4U);
         r[6] &= 0x3ffffffL;
         r[7] = (sp_digit)(t[5] >> 22U);
-        r[7] |= t[6] << 10U;
+        r[7] |= (sp_digit)(t[6] << 10U);
         r[7] &= 0x3ffffffL;
         r[8] = (sp_digit)(t[6] >> 16U);
-        r[8] |= t[7] << 16U;
+        r[8] |= (sp_digit)(t[7] << 16U);
         r[8] &= 0x3ffffffL;
         r[9] = (sp_digit)(t[7] >> 10U);
     }
@@ -12963,8 +12963,8 @@ SP_NOINLINE static void sp_256_mul_10(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 52;
-        r[k + 1] = (c >> 26) & 0x3ffffff;
+        r[k + 2] += (sp_digit)(c >> 52);
+        r[k + 1] = (sp_digit)((c >> 26) & 0x3ffffff);
         c = (c & 0x3ffffff) << 26;
     }
     r[0] = (sp_digit)(c >> 26);
@@ -13188,7 +13188,7 @@ SP_NOINLINE static void sp_256_mul_add_10(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x3ffffff;
         t >>= 26;
     }
-    r[10] += t;
+    r[10] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[10];
@@ -13376,8 +13376,8 @@ SP_NOINLINE static void sp_256_sqr_10(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 52;
-        r[k + 1] = (c >> 26) & 0x3ffffff;
+        r[k + 2] += (sp_digit)(c >> 52);
+        r[k + 1] = (sp_digit)((c >> 26) & 0x3ffffff);
         c = (c & 0x3ffffff) << 26;
     }
     r[0] = (sp_digit)(c >> 26);
@@ -19221,39 +19221,39 @@ static int sp_384_mod_mul_norm_15(sp_digit* r, const sp_digit* a, const sp_digit
 
         r[0] = (sp_digit)(t[0]) & 0x3ffffffL;
         r[1] = (sp_digit)(t[0] >> 26U);
-        r[1] |= t[1] << 6U;
+        r[1] |= (sp_digit)(t[1] << 6U);
         r[1] &= 0x3ffffffL;
         r[2] = (sp_digit)(t[1] >> 20U);
-        r[2] |= t[2] << 12U;
+        r[2] |= (sp_digit)(t[2] << 12U);
         r[2] &= 0x3ffffffL;
         r[3] = (sp_digit)(t[2] >> 14U);
-        r[3] |= t[3] << 18U;
+        r[3] |= (sp_digit)(t[3] << 18U);
         r[3] &= 0x3ffffffL;
         r[4] = (sp_digit)(t[3] >> 8U);
-        r[4] |= t[4] << 24U;
+        r[4] |= (sp_digit)(t[4] << 24U);
         r[4] &= 0x3ffffffL;
         r[5] = (sp_digit)(t[4] >> 2U) & 0x3ffffffL;
         r[6] = (sp_digit)(t[4] >> 28U);
-        r[6] |= t[5] << 4U;
+        r[6] |= (sp_digit)(t[5] << 4U);
         r[6] &= 0x3ffffffL;
         r[7] = (sp_digit)(t[5] >> 22U);
-        r[7] |= t[6] << 10U;
+        r[7] |= (sp_digit)(t[6] << 10U);
         r[7] &= 0x3ffffffL;
         r[8] = (sp_digit)(t[6] >> 16U);
-        r[8] |= t[7] << 16U;
+        r[8] |= (sp_digit)(t[7] << 16U);
         r[8] &= 0x3ffffffL;
         r[9] = (sp_digit)(t[7] >> 10U);
-        r[9] |= t[8] << 22U;
+        r[9] |= (sp_digit)(t[8] << 22U);
         r[9] &= 0x3ffffffL;
         r[10] = (sp_digit)(t[8] >> 4U) & 0x3ffffffL;
         r[11] = (sp_digit)(t[8] >> 30U);
-        r[11] |= t[9] << 2U;
+        r[11] |= (sp_digit)(t[9] << 2U);
         r[11] &= 0x3ffffffL;
         r[12] = (sp_digit)(t[9] >> 24U);
-        r[12] |= t[10] << 8U;
+        r[12] |= (sp_digit)(t[10] << 8U);
         r[12] &= 0x3ffffffL;
         r[13] = (sp_digit)(t[10] >> 18U);
-        r[13] |= t[11] << 14U;
+        r[13] |= (sp_digit)(t[11] << 14U);
         r[13] &= 0x3ffffffL;
         r[14] = (sp_digit)(t[11] >> 12U);
     }
@@ -19478,8 +19478,8 @@ SP_NOINLINE static void sp_384_mul_15(sp_digit* r, const sp_digit* a,
 
             c += ((int64_t)a[i]) * b[j];
         }
-        r[k + 2] += c >> 52;
-        r[k + 1] = (c >> 26) & 0x3ffffff;
+        r[k + 2] += (sp_digit)(c >> 52);
+        r[k + 1] = (sp_digit)((c >> 26) & 0x3ffffff);
         c = (c & 0x3ffffff) << 26;
     }
     r[0] = (sp_digit)(c >> 26);
@@ -19848,7 +19848,7 @@ SP_NOINLINE static void sp_384_mul_add_15(sp_digit* r, const sp_digit* a,
         r[i] = t & 0x3ffffff;
         t >>= 26;
     }
-    r[15] += t;
+    r[15] += (sp_digit)t;
 #else
     int64_t tb = b;
     int64_t t[15];
@@ -20032,8 +20032,8 @@ SP_NOINLINE static void sp_384_sqr_15(sp_digit* r, const sp_digit* a)
            c += ((int64_t)a[i]) * a[i];
         }
 
-        r[k + 2] += c >> 52;
-        r[k + 1] = (c >> 26) & 0x3ffffff;
+        r[k + 2] += (sp_digit)(c >> 52);
+        r[k + 1] = (sp_digit)((c >> 26) & 0x3ffffff);
         c = (c & 0x3ffffff) << 26;
     }
     r[0] = (sp_digit)(c >> 26);

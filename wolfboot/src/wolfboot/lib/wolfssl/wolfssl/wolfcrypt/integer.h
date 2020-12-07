@@ -42,7 +42,11 @@
 #include <wolfssl/wolfcrypt/random.h>
 
 #ifndef CHAR_BIT
-    #include <limits.h>
+    #if defined(WOLFSSL_LINUXKM)
+        #include <linux/limits.h>
+    #else
+        #include <limits.h>
+    #endif
 #endif
 
 #include <wolfssl/wolfcrypt/mpi_class.h>
@@ -301,6 +305,7 @@ MP_API int  mp_div_2d (mp_int * a, int b, mp_int * c, mp_int * d);
 MP_API void mp_zero (mp_int * a);
 MP_API void mp_clamp (mp_int * a);
 MP_API void mp_exch (mp_int * a, mp_int * b);
+MP_API int  mp_cond_swap_ct (mp_int * a, mp_int * b, int c, int m);
 MP_API void mp_rshd (mp_int * a, int b);
 MP_API void mp_rshb (mp_int * a, int b);
 MP_API int  mp_mod_2d (mp_int * a, int b, mp_int * c);

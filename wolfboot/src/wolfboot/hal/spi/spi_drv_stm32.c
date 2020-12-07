@@ -90,6 +90,22 @@ static void spi1_pins_setup(void)
     SPI_PIO_AFL = reg | (SPI1_PIN_AF << ((SPI1_MOSI_PIN) * 4));
     reg = SPI_PIO_AFL & ~(0xf << ((SPI1_MISO_PIN) * 4));
     SPI_PIO_AFL = reg | (SPI1_PIN_AF << ((SPI1_MISO_PIN) * 4));
+
+#ifdef PLATFORM_stm32l0
+    reg = SPI_PIO_PUPD & ~(0x03 <<  (SPI1_CLOCK_PIN * 2));
+    SPI_PIO_PUPD = reg | (0x02 << (SPI1_CLOCK_PIN * 2));
+    reg = SPI_PIO_PUPD & ~(0x03 <<  (SPI1_MOSI_PIN * 2));
+    SPI_PIO_PUPD = reg | (0x02 << (SPI1_MOSI_PIN * 2));
+    reg = SPI_PIO_PUPD & ~(0x03 <<  (SPI1_MISO_PIN * 2));
+    SPI_PIO_PUPD = reg | (0x02 << (SPI1_MISO_PIN * 2));
+
+    reg = SPI_PIO_OSPD & ~(0x03 << (SPI1_CLOCK_PIN * 2));
+    SPI_PIO_OSPD |= (0x03 << (SPI1_CLOCK_PIN * 2));
+    reg = SPI_PIO_OSPD & ~(0x03 << (SPI1_MOSI_PIN * 2));
+    SPI_PIO_OSPD |= (0x03 << (SPI1_MOSI_PIN * 2));
+    reg = SPI_PIO_OSPD & ~(0x03 << (SPI1_MISO_PIN * 2));
+    SPI_PIO_OSPD |= (0x03 << (SPI1_MISO_PIN * 2));
+#endif
 }
 
 static void spi_pins_release(void)
@@ -155,7 +171,11 @@ void spi_init(int polarity, int phase)
         spi_tpm2_pin_setup();
         APB2_CLOCK_ER |= SPI1_APB2_CLOCK_ER_VAL;
         spi1_reset();
+#ifdef PLATFORM_stm32l0
+        SPI1_CR1 = SPI_CR1_MASTER | (polarity << 1) | (phase << 0);
+#else
         SPI1_CR1 = SPI_CR1_MASTER | (5 << 3) | (polarity << 1) | (phase << 0);
+#endif
         SPI1_CR2 |= SPI_CR2_SSOE;
         SPI1_CR1 |= SPI_CR1_SPI_EN;
     }

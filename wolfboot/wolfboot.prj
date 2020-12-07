@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?>
 <sdkproject:SdkProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdkproject="http://www.xilinx.com/sdkproject" name="wolfboot" location="C:/Xilinx/workspace/L3/wolfboot" platform="C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm" platformUID="xilinx:::0.0(custom)" systemProject="wolfboot_system" sysConfig="UltraZed-EG-Platform" runtime="C/C++" cpu="domain_psu_cortexa53_0" cpuInstance="psu_cortexa53_0" os="standalone" mssSignature="a7ae7ba1acd92cb891379c9510725b85">
-  <configuration name="Debug" id="xilinx.gnu.arm.a53.exe.debug.104647700" dirty="true">
+  <configuration name="Debug" id="xilinx.gnu.arm.a53.exe.debug.104647700">
     <configBuildOptions xsi:type="sdkproject:SdkOptions"/>
     <lastBuildOptions xsi:type="sdkproject:SdkOptions"/>
   </configuration>

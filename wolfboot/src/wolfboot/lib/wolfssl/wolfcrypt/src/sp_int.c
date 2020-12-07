@@ -104,7 +104,9 @@ int sp_init(sp_int* a)
 {
     a->used = 0;
     a->size = SP_INT_DIGITS;
-
+#ifdef HAVE_WOLF_BIGINT
+    wc_bigint_init(&a->raw);
+#endif
     return MP_OKAY;
 }
 
@@ -125,26 +127,44 @@ int sp_init_multi(sp_int* a, sp_int* b, sp_int* c, sp_int* d, sp_int* e,
     if (a != NULL) {
         a->used = 0;
         a->size = SP_INT_DIGITS;
+    #ifdef HAVE_WOLF_BIGINT
+        wc_bigint_init(&a->raw);
+    #endif
     }
     if (b != NULL) {
         b->used = 0;
         b->size = SP_INT_DIGITS;
+    #ifdef HAVE_WOLF_BIGINT
+        wc_bigint_init(&b->raw);
+    #endif
     }
     if (c != NULL) {
         c->used = 0;
         c->size = SP_INT_DIGITS;
+    #ifdef HAVE_WOLF_BIGINT
+        wc_bigint_init(&c->raw);
+    #endif
     }
     if (d != NULL) {
         d->used = 0;
         d->size = SP_INT_DIGITS;
+    #ifdef HAVE_WOLF_BIGINT
+        wc_bigint_init(&d->raw);
+    #endif
     }
     if (e != NULL) {
         e->used = 0;
         e->size = SP_INT_DIGITS;
+    #ifdef HAVE_WOLF_BIGINT
+        wc_bigint_init(&e->raw);
+    #endif
     }
     if (f != NULL) {
         f->used = 0;
         f->size = SP_INT_DIGITS;
+    #ifdef HAVE_WOLF_BIGINT
+        wc_bigint_init(&f->raw);
+    #endif
     }
 
     return MP_OKAY;
@@ -930,7 +950,7 @@ static int sp_div(sp_int* a, sp_int* d, sp_int* r, sp_int* rem)
         }
         for (i = sa->used - 1; i >= d->used; i--) {
             if (sa->dp[i] == dt) {
-                t = (sp_digit)-1;
+                t = SP_MASK; /* f's */
             }
             else {
                 t = sp_div_word(sa->dp[i], sa->dp[i-1], dt);
@@ -1447,9 +1467,79 @@ int sp_mulmod(sp_int* a, sp_int* b, sp_int* m, sp_int* r)
 }
 #endif
 
+#ifdef WOLFSSL_SP_MOD_WORD_RP
+/* Calculate the word w modulo the digit d into r: r = w mod d
+ *
+ * w  SP integer word, dividend and result.
+ * d  SP integer digit, modulus.
+ *
+ * returns MP_VAL when d is 0 and MP_OKAY otherwise.
+ */
+static WC_INLINE int sp_mod_word(sp_int_word *w, sp_int_digit d) {
+    sp_int_word x;
+    if (*w == 0)
+        return 0;
+    if (d == 0)
+        return MP_VAL;
+
+    /* Russian Peasant algorithm for division, optimized:
+     *
+     * first, shift x leftward just enough to be greater than w/2.
+     * this can be done by counting the leading zeros of each,
+     * shifting so that x has one less leading zero, and then doing a
+     * final comparison.
+     *
+     */
+#ifdef __GNUC__
+    {
+        int x_shift = ((int)__builtin_clzll(d) + (SP_WORD_SIZE - 1));
+        if ((*w >> SP_WORD_SIZE) == 0)
+            x_shift -=
+#if SP_WORD_SIZE == 64
+                (int)__builtin_clzll((uint64_t)*w)
+#elif SP_WORD_SIZE == 32
+                (int)__builtin_clz((uint32_t)*w)
+#else
+#error unexpected SP_WORD_SIZE
+#endif
+                + SP_WORD_SIZE;
+        else
+            x_shift -=
+#if SP_WORD_SIZE == 64
+                (int)__builtin_clzll((uint64_t)(*w >> SP_WORD_SIZE))
+#elif SP_WORD_SIZE == 32
+                (int)__builtin_clz((uint32_t)(*w >> SP_WORD_SIZE))
+#else
+#error unexpected SP_WORD_SIZE
+#endif
+                ;
+        if (x_shift < 0)
+            x_shift = 0;
+        x = (sp_int_word)d << x_shift;
+    }
+    if (x <= (*w>>1))
+        x <<= 1;
+#else /* ! __GNUC__ */
+    /* textbook logic */
+
+    x = (sp_int_word)d;
+    while (x <= (*w>>1))
+        x <<= 1;
+#endif /* __GNUC__ */
+
+    while (*w >= (sp_int_word)d) {
+        if (*w >= x)
+            *w -= x;
+        x >>= 1;
+    }
+
+    return MP_OKAY;
+}
+#endif /* WOLFSSL_SP_MOD_WORD_RP */
+
 /* Calculate a modulo the digit d into r: r = a mod d
  *
- * a  SP integer to square.
+ * a  SP integer, dividend.
  * d  SP integer digit, modulus.
  * r  SP integer digit, result.
  * returns MP_VAL when d is 0 and MP_OKAY otherwise.
@@ -1459,7 +1549,6 @@ static int sp_mod_d(sp_int* a, const sp_int_digit d, sp_int_digit* r)
     int err = MP_OKAY;
     int i;
     sp_int_word w = 0;
-    sp_int_digit t;
 
     if (d == 0)
         err = MP_VAL;
@@ -1467,8 +1556,17 @@ static int sp_mod_d(sp_int* a, const sp_int_digit d, sp_int_digit* r)
     if (err == MP_OKAY) {
         for (i = a->used - 1; i >= 0; i--) {
             w = (w << SP_WORD_SIZE) | a->dp[i];
-            t = (sp_int_digit)(w / d);
-            w -= (sp_int_word)t * d;
+#ifdef WOLFSSL_SP_MOD_WORD_RP
+            if (sp_mod_word(&w, d) == MP_VAL) {
+                err = MP_VAL;
+                break;
+            }
+#else
+            {
+                sp_int_digit t = (sp_int_digit)(w / d);
+                w -= (sp_int_word)t * d;
+            }
+#endif
         }
 
         *r = (sp_int_digit)w;

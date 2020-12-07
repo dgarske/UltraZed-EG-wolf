@@ -130,6 +130,8 @@ where 0 <= L < 2^64.
 #elif defined(WOLFSSL_CRYPTOCELL)
     /* wc_port.c includes wolfcrypt/src/port/arm/cryptoCellHash.c */
 
+#elif defined(WOLFSSL_IMXRT_DCP)
+
 #elif defined(WOLFSSL_PSOC6_CRYPTO)
 
 
@@ -179,7 +181,7 @@ where 0 <= L < 2^64.
     !defined(WOLFSSL_AFALG_HASH) && !defined(WOLFSSL_DEVCRYPTO_HASH) && \
     (!defined(WOLFSSL_ESP32WROOM32_CRYPT) || defined(NO_WOLFSSL_ESP32WROOM32_CRYPT_HASH)) && \
     (!defined(WOLFSSL_RENESAS_TSIP_CRYPT) || defined(NO_WOLFSSL_RENESAS_TSIP_HASH)) && \
-    !defined(WOLFSSL_PSOC6_CRYPTO)
+    !defined(WOLFSSL_PSOC6_CRYPTO) && !defined(WOLFSSL_IMXRT_DCP)
 
 static int InitSha256(wc_Sha256* sha256)
 {
@@ -309,9 +311,26 @@ static int InitSha256(wc_Sha256* sha256)
                                                                     /* = NULL */
     static int transform_check = 0;
     static word32 intel_flags;
+    static int Transform_Sha256_is_vectorized = 0;
 
-    #define XTRANSFORM(S, D)         (*Transform_Sha256_p)((S),(D))
-    #define XTRANSFORM_LEN(S, D, L)  (*Transform_Sha256_Len_p)((S),(D),(L))
+    #define XTRANSFORM(S, D) ({                        \
+        int _ret;                                      \
+        if (Transform_Sha256_is_vectorized)            \
+            SAVE_VECTOR_REGISTERS();                   \
+        _ret = (*Transform_Sha256_p)((S),(D));         \
+        if (Transform_Sha256_is_vectorized)            \
+            RESTORE_VECTOR_REGISTERS();                \
+        _ret;                                          \
+    })
+    #define XTRANSFORM_LEN(S, D, L) ({                 \
+        int _ret;                                      \
+        if (Transform_Sha256_is_vectorized)            \
+            SAVE_VECTOR_REGISTERS();                   \
+        _ret = (*Transform_Sha256_Len_p)((S),(D),(L)); \
+        if (Transform_Sha256_is_vectorized)            \
+            RESTORE_VECTOR_REGISTERS();                \
+        _ret;                                          \
+    })
 
     static void Sha256_SetTransform(void)
     {
@@ -327,6 +346,7 @@ static int InitSha256(wc_Sha256* sha256)
             if (IS_INTEL_BMI2(intel_flags)) {
                 Transform_Sha256_p = Transform_Sha256_AVX2_RORX;
                 Transform_Sha256_Len_p = Transform_Sha256_AVX2_RORX_Len;
+                Transform_Sha256_is_vectorized = 1;
             }
             else
         #endif
@@ -334,11 +354,13 @@ static int InitSha256(wc_Sha256* sha256)
             {
                 Transform_Sha256_p = Transform_Sha256_AVX2;
                 Transform_Sha256_Len_p = Transform_Sha256_AVX2_Len;
+                Transform_Sha256_is_vectorized = 1;
             }
         #ifdef HAVE_INTEL_RORX
             else {
                 Transform_Sha256_p = Transform_Sha256_AVX1_RORX;
                 Transform_Sha256_Len_p = Transform_Sha256_AVX1_RORX_Len;
+                Transform_Sha256_is_vectorized = 1;
             }
         #endif
         }
@@ -348,12 +370,14 @@ static int InitSha256(wc_Sha256* sha256)
         if (IS_INTEL_AVX1(intel_flags)) {
             Transform_Sha256_p = Transform_Sha256_AVX1;
             Transform_Sha256_Len_p = Transform_Sha256_AVX1_Len;
+            Transform_Sha256_is_vectorized = 1;
         }
         else
     #endif
         {
             Transform_Sha256_p = Transform_Sha256;
             Transform_Sha256_Len_p = NULL;
+            Transform_Sha256_is_vectorized = 0;
         }
 
         transform_check = 1;
@@ -368,6 +392,9 @@ static int InitSha256(wc_Sha256* sha256)
         sha256->heap = heap;
     #ifdef WOLF_CRYPTO_CB
         sha256->devId = devId;
+    #endif
+    #ifdef WOLFSSL_SMALL_STACK_CACHE
+        sha256->W = NULL;
     #endif
 
         ret = InitSha256(sha256);
@@ -683,6 +710,10 @@ static int InitSha256(wc_Sha256* sha256)
 
     /* implemented in wolfcrypt/src/port/cypress/psoc6_crypto.c */
 
+#elif defined(WOLFSSL_IMXRT_DCP)
+    #include <wolfssl/wolfcrypt/port/nxp/dcp_port.h>
+    /* implemented in wolfcrypt/src/port/nxp/dcp_port.c */
+
 #else
     #define NEED_SOFT_SHA256
 
@@ -697,14 +728,13 @@ static int InitSha256(wc_Sha256* sha256)
         sha256->devId = devId;
         sha256->devCtx = NULL;
     #endif
+    #ifdef WOLFSSL_SMALL_STACK_CACHE
+        sha256->W = NULL;
+    #endif
 
         ret = InitSha256(sha256);
         if (ret != 0)
             return ret;
-
-    #ifdef WOLFSSL_SMALL_STACK_CACHE
-        sha256->W = NULL;
-    #endif
 
     #if defined(WOLFSSL_ASYNC_CRYPT) && defined(WC_ASYNC_ENABLE_SHA256)
         ret = wolfAsync_DevCtxInit(&sha256->asyncDev,
@@ -1264,6 +1294,7 @@ static int InitSha256(wc_Sha256* sha256)
         (void)devId;
         (void)heap;
 
+        XMEMSET(sha224, 0, sizeof(wc_Sha224));
         wc_Stm32_Hash_Init(&sha224->stmCtx);
         return 0;
     }
@@ -1362,14 +1393,13 @@ static int InitSha256(wc_Sha256* sha256)
             return BAD_FUNC_ARG;
 
         sha224->heap = heap;
+    #ifdef WOLFSSL_SMALL_STACK_CACHE
+        sha224->W = NULL;
+    #endif
 
         ret = InitSha224(sha224);
         if (ret != 0)
             return ret;
-
-    #ifdef WOLFSSL_SMALL_STACK_CACHE
-        sha224->W = NULL;
-    #endif
 
     #if defined(WOLFSSL_ASYNC_CRYPT) && defined(WC_ASYNC_ENABLE_SHA224)
         ret = wolfAsync_DevCtxInit(&sha224->asyncDev,
@@ -1505,6 +1535,9 @@ void wc_Sha256Free(wc_Sha256* sha256)
         sha256->msg = NULL;
     }
 #endif
+#ifdef WOLFSSL_IMXRT_DCP
+    DCPSha256Free(sha256);
+#endif
 }
 
 #endif /* !WOLFSSL_TI_HASH */
@@ -1581,6 +1614,8 @@ void wc_Sha256Free(wc_Sha256* sha256)
     /* implemented in wolfcrypt/src/port/Renesas/renesas_tsip_sha.c */
 #elif defined(WOLFSSL_PSOC6_CRYPTO)
     /* implemented in wolfcrypt/src/port/cypress/psoc6_crypto.c */
+#elif defined(WOLFSSL_IMXRT_DCP)
+    /* implemented in wolfcrypt/src/port/nxp/dcp_port.c */
 #else
 
 int wc_Sha256GetHash(wc_Sha256* sha256, byte* hash)

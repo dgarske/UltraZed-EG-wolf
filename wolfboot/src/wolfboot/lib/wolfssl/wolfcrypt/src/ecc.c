@@ -1304,15 +1304,13 @@ static void wc_ecc_curve_free(ecc_curve_spec* curve)
 {
     if (curve) {
     #ifdef ECC_CACHE_CURVE
-        /* only free custom curves (reset are globally cached) */
-        if (curve->dp 
         #ifdef WOLFSSL_CUSTOM_CURVES
-            && curve->dp->id == ECC_CURVE_CUSTOM
-        #endif
-        ) {
+        /* only free custom curves (rest are globally cached) */
+        if (curve->dp && curve->dp->id == ECC_CURVE_CUSTOM) {
             wc_ecc_curve_cache_free_spec(curve);
             XFREE(curve, NULL, DYNAMIC_TYPE_ECC);
         }
+        #endif
     #else
         wc_ecc_curve_cache_free_spec(curve);
     #endif
@@ -2076,7 +2074,20 @@ int ecc_projective_dbl_point(ecc_point *P, ecc_point *R, mp_int* a,
       /* Use a and prime to determine if a == 3 */
       err = mp_submod(modulus, a, modulus, t2);
    }
-   if (err == MP_OKAY && mp_cmp_d(t2, 3) != MP_EQ) {
+   if (err == MP_OKAY && mp_iszero(t2)) {
+      /* T2 = X * X */
+      if (err == MP_OKAY)
+          err = mp_sqr(x, t2);
+      if (err == MP_OKAY)
+          err = mp_montgomery_reduce(t2, modulus, mp);
+      /* T1 = T2 + T1 */
+      if (err == MP_OKAY)
+          err = mp_addmod_ct(t2, t2, modulus, t1);
+      /* T1 = T2 + T1 */
+      if (err == MP_OKAY)
+          err = mp_addmod_ct(t1, t2, modulus, t1);
+   }
+   else if (err == MP_OKAY && mp_cmp_d(t2, 3) != MP_EQ) {
       /* use "a" in calc */
 
       /* T2 = T1 * T1 */
@@ -2637,182 +2648,158 @@ static int wc_ecc_gen_z(WC_RNG* rng, int size, ecc_point* p,
     return err;
 }
 
-#if defined(WC_NO_CACHE_RESISTANT)
-   #define M_POINTS 4
-#else
-   #define M_POINTS 5
-#endif
+#define M_POINTS 3
 
-static int ecc_mulmod(mp_int* k, ecc_point* tG, ecc_point* R, ecc_point** M,
+/* Joye double-add ladder.
+ * "Highly Regular Right-to-Left Algorithms for Scalar Multiplication"
+ * by Marc Joye (2007)
+ *
+ * Algorithm 1':
+ *   Input: P element of curve, k = (k[t-1],..., k[0]) base 2
+ *   Output: Q = kP
+ *   1: R[0] = P; R[1] = P
+ *   2: for j = 1 to t-1 do
+ *   3:   b = 1 - k[j]; R[b] = 2*R[b] + R[k[j]]
+ *   4: end for
+ *   5: b = k[0]; R[b] = R[b] - P
+ *   6: return R[0]
+ *
+ * Assumes: k < order.
+ */
+static int ecc_mulmod(mp_int* k, ecc_point* P, ecc_point* Q, ecc_point** R,
     mp_int* a, mp_int* modulus, mp_digit mp, WC_RNG* rng)
 {
-   int      err = MP_OKAY;
-   int      i;
-   int      bitcnt = 0, mode = 0, digidx = 0;
-   mp_digit buf;
-
-   /* calc the M tab */
-   /* M[0] == G */
-   if (err == MP_OKAY)
-       err = mp_copy(tG->x, M[0]->x);
-   if (err == MP_OKAY)
-       err = mp_copy(tG->y, M[0]->y);
-   if (err == MP_OKAY)
-       err = mp_copy(tG->z, M[0]->z);
-
-   /* M[1] == 2G */
-   if (err == MP_OKAY)
-       err = ecc_projective_dbl_point(tG, M[1], a, modulus, mp);
-
-#ifdef WC_NO_CACHE_RESISTANT
-   if (err == MP_OKAY)
-       err = wc_ecc_copy_point(M[0], M[2]);
-   if (rng != NULL) {
-       if (err == MP_OKAY) {
-           err = wc_ecc_gen_z(rng, (mp_count_bits(modulus) + 7) / 8, M[0],
-                                                 modulus, mp, M[3]->x, M[3]->y);
-       }
-       if (err == MP_OKAY) {
-           err = wc_ecc_gen_z(rng, (mp_count_bits(modulus) + 7) / 8, M[1],
-                                                 modulus, mp, M[3]->x, M[3]->y);
-       }
-   }
-#else
-   if (err == MP_OKAY)
-       err = wc_ecc_copy_point(M[0], M[3]);
-   if (err == MP_OKAY)
-       err = wc_ecc_copy_point(M[1], M[4]);
-   if (rng != NULL) {
-       if (err == MP_OKAY) {
-           err = wc_ecc_gen_z(rng, (mp_count_bits(modulus) + 7) / 8, M[3],
-                                                 modulus, mp, M[2]->x, M[2]->y);
-       }
-       if (err == MP_OKAY) {
-           err = wc_ecc_gen_z(rng, (mp_count_bits(modulus) + 7) / 8, M[4],
-                                                 modulus, mp, M[2]->x, M[2]->y);
-       }
-   }
+    int      err = MP_OKAY;
+    int      bytes = (mp_count_bits(modulus) + 7) / 8;
+    int      i;
+    int      j = 1;
+    int      cnt = DIGIT_BIT;
+    int      t = 0;
+    mp_digit b;
+    mp_digit v = 0;
+#ifndef WC_NO_CACHE_RESISTANT
+    /* First bit always 1 (fix at end) and swap equals first bit */
+    int      swap = 1;
 #endif
 
-   /* setup sliding window */
-   mode   = 0;
-   digidx = get_digit_count(modulus) - 1;
-   /* The order MAY be 1 bit longer than the modulus.
-    * k MAY be 1 bit longer than the order.
-    */
-   bitcnt = (mp_count_bits(modulus) + 2) % DIGIT_BIT;
-   digidx += (bitcnt <= 3);
-   buf    = get_digit(k, digidx) << (DIGIT_BIT - bitcnt);
-   bitcnt = (bitcnt + 1) % DIGIT_BIT;
-   digidx -= bitcnt != 1;
+    /* Step 1: R[0] = P; R[1] = P */
+    /* R[0] = P */
+    if (err == MP_OKAY)
+        err = mp_copy(P->x, R[0]->x);
+    if (err == MP_OKAY)
+        err = mp_copy(P->y, R[0]->y);
+    if (err == MP_OKAY)
+        err = mp_copy(P->z, R[0]->z);
 
-   /* perform ops */
-   if (err == MP_OKAY) {
-       for (;;) {
-           /* grab next digit as required */
-           if (--bitcnt == 0) {
-               if (digidx == -1) {
-                   break;
-               }
-               buf = get_digit(k, digidx);
-               bitcnt = (int)DIGIT_BIT;
-               --digidx;
-           }
+    /* R[1] = P */
+    if (err == MP_OKAY)
+        err = mp_copy(P->x, R[1]->x);
+    if (err == MP_OKAY)
+        err = mp_copy(P->y, R[1]->y);
+    if (err == MP_OKAY)
+        err = mp_copy(P->z, R[1]->z);
 
-           /* grab the next msb from the multiplicand */
-           i = (buf >> (DIGIT_BIT - 1)) & 1;
-           buf <<= 1;
+    /* Randomize z ordinates to obfuscate timing. */
+    if ((err == MP_OKAY) && (rng != NULL))
+        err = wc_ecc_gen_z(rng, bytes, R[0], modulus, mp, R[2]->x, R[2]->y);
+    if ((err == MP_OKAY) && (rng != NULL))
+        err = wc_ecc_gen_z(rng, bytes, R[1], modulus, mp, R[2]->x, R[2]->y);
 
+    if (err == MP_OKAY) {
+        /* Order could be one greater than the size of the modulus. */
+        t = mp_count_bits(modulus) + 1;
+        v = k->dp[0] >> 1;
+        if (cnt > t) {
+            cnt = t;
+        }
+        err = mp_grow(k, modulus->used + 1);
+    }
+    /* Step 2: for j = 1 to t-1 do */
+    for (i = 1; (err == MP_OKAY) && (i < t); i++) {
+        if (--cnt == 0) {
+            v = k->dp[j++];
+            cnt = DIGIT_BIT;
+        }
+
+        /* Step 3: b = 1 - k[j]; R[b] = 2*R[b] + R[k[j]] */
+        b = v & 1;
+        v >>= 1;
 #ifdef WC_NO_CACHE_RESISTANT
-           if (mode == 0) {
-               /* timing resistant - dummy operations */
-               if (err == MP_OKAY)
-                   err = ecc_projective_add_point(M[1], M[2], M[3], a, modulus,
-                                                  mp);
-               if (err == MP_OKAY)
-                   err = ecc_projective_dbl_point(M[3], M[2], a, modulus, mp);
-           }
-           else {
-               if (err == MP_OKAY)
-                   err = ecc_projective_add_point(M[0], M[1], M[i^1], a,
-                                                  modulus, mp);
-               if (err == MP_OKAY)
-                   err = ecc_projective_dbl_point(M[i], M[i], a, modulus, mp);
-           }
+        err = ecc_projective_dbl_point(R[b^1], R[b^1], a, modulus, mp);
+        if (err == MP_OKAY) {
+            err = ecc_projective_add_point(R[b^1], R[b], R[b^1], a, modulus,
+                                           mp);
+        }
 #else
-           if (err == MP_OKAY)
-               err = ecc_projective_add_point(M[0], M[1], M[2], a, modulus, mp);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->x, i, M[0]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->y, i, M[0]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->z, i, M[0]->z);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->x, i ^ 1, M[1]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->y, i ^ 1, M[1]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->z, i ^ 1, M[1]->z);
+        /* Swap R[0] and R[1] if other index is needed. */
+        swap ^= b;
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->x, R[1]->x, modulus->used, swap);
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->y, R[1]->y, modulus->used, swap);
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->z, R[1]->z, modulus->used, swap);
+        swap = (int)b;
 
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[0]->x, i ^ 1, M[2]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[0]->y, i ^ 1, M[2]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[0]->z, i ^ 1, M[2]->z);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[1]->x, i, M[2]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[1]->y, i, M[2]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[1]->z, i, M[2]->z);
-
-           if (err == MP_OKAY)
-               err = ecc_projective_dbl_point(M[2], M[2], a, modulus, mp);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->x, i ^ 1, M[0]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->y, i ^ 1, M[0]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->z, i ^ 1, M[0]->z);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->x, i, M[1]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->y, i, M[1]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[2]->z, i, M[1]->z);
-
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[3]->x, (mode ^ 1) & i, M[0]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[3]->y, (mode ^ 1) & i, M[0]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[3]->z, (mode ^ 1) & i, M[0]->z);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[4]->x, (mode ^ 1) & i, M[1]->x);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[4]->y, (mode ^ 1) & i, M[1]->y);
-           if (err == MP_OKAY)
-               err = mp_cond_copy(M[4]->z, (mode ^ 1) & i, M[1]->z);
+        if (err == MP_OKAY)
+            err = ecc_projective_dbl_point(R[0], R[0], a, modulus, mp);
+        if (err == MP_OKAY)
+            err = ecc_projective_add_point(R[0], R[1], R[0], a, modulus, mp);
 #endif /* WC_NO_CACHE_RESISTANT */
+    }
+    /* Step 4: end for */
+#ifndef WC_NO_CACHE_RESISTANT
+    /* Swap back if last bit is 0. */
+    swap ^= 1;
+    if (err == MP_OKAY)
+        err = mp_cond_swap_ct(R[0]->x, R[1]->x, modulus->used, swap);
+    if (err == MP_OKAY)
+        err = mp_cond_swap_ct(R[0]->y, R[1]->y, modulus->used, swap);
+    if (err == MP_OKAY)
+        err = mp_cond_swap_ct(R[0]->z, R[1]->z, modulus->used, swap);
+#endif
 
-           if (err != MP_OKAY)
-               break;
+    /* Step 5: b = k[0]; R[b] = R[b] - P */
+    /* R[2] = -P */
+    if (err == MP_OKAY)
+        err = mp_copy(P->x, R[2]->x);
+    if (err == MP_OKAY)
+        err = mp_sub(modulus, P->y, R[2]->y);
+    if (err == MP_OKAY)
+        err = mp_copy(P->z, R[2]->z);
+    /* Subtract point by adding negative. */
+    if (err == MP_OKAY) {
+        b = k->dp[0] & 1;
+#ifdef WC_NO_CACHE_RESISTANT
+        err = ecc_projective_add_point(R[b], R[2], R[b], a, modulus, mp);
+#else
+        /* Swap R[0] and R[1], if necessary, to operate on the one we want. */
+        err = mp_cond_swap_ct(R[0]->x, R[1]->x, modulus->used, (int)b);
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->y, R[1]->y, modulus->used, (int)b);
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->z, R[1]->z, modulus->used, (int)b);
+        if (err == MP_OKAY)
+            err = ecc_projective_add_point(R[0], R[2], R[0], a, modulus, mp);
+        /* Swap back if necessary. */
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->x, R[1]->x, modulus->used, (int)b);
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->y, R[1]->y, modulus->used, (int)b);
+        if (err == MP_OKAY)
+            err = mp_cond_swap_ct(R[0]->z, R[1]->z, modulus->used, (int)b);
+#endif
+    }
 
-           mode |= i;
-       } /* end for */
-   }
+    /* Step 6: return R[0] */
+    if (err == MP_OKAY)
+        err = mp_copy(R[0]->x, Q->x);
+    if (err == MP_OKAY)
+        err = mp_copy(R[0]->y, Q->y);
+    if (err == MP_OKAY)
+        err = mp_copy(R[0]->z, Q->z);
 
-   /* copy result out */
-   if (err == MP_OKAY)
-       err = mp_copy(M[0]->x, R->x);
-   if (err == MP_OKAY)
-       err = mp_copy(M[0]->y, R->y);
-   if (err == MP_OKAY)
-       err = mp_copy(M[0]->z, R->z);
-
-   return err;
+    return err;
 }
 
 #endif
@@ -3060,8 +3047,6 @@ int wc_ecc_mulmod_ex2(mp_int* k, ecc_point *G, ecc_point *R, mp_int* a,
    mp_digit      mp;
 #ifdef ECC_TIMING_RESISTANT
    mp_int t;
-   mp_int o;
-   mp_digit mask;
 #endif
 
    if (k == NULL || G == NULL || R == NULL || modulus == NULL) {
@@ -3116,49 +3101,30 @@ int wc_ecc_mulmod_ex2(mp_int* k, ecc_point *G, ecc_point *R, mp_int* a,
 #ifdef ECC_TIMING_RESISTANT
    if ((err = mp_init(&t)) != MP_OKAY)
       goto exit;
-   if ((err = mp_init(&o)) != MP_OKAY) {
-      mp_free(&t);
-      goto exit;
-   }
-
-   /* Make k at 1 bit longer than order. */
-   if (err == MP_OKAY) {
-      err = mp_add(k, order, &t);
-   }
-   if (err == MP_OKAY) {
-      err = mp_copy(order, &o);
-   }
-   if (err == MP_OKAY) {
-      /* Only add if order + k has same number of bits as order */
-      mask = (mp_digit)0 - (mp_count_bits(&t) == mp_count_bits(order));
-      for (i = 0; i < o.used; i++) {
-         o.dp[i] &= mask;
-      }
-      err = mp_add(&t, &o, &t);
-   }
-   mp_free(&o);
 
    if (err == MP_OKAY)
-      err = ecc_mulmod(&t, tG, R, M, a, modulus, mp, rng);
+      err = ecc_mulmod(k, tG, R, M, a, modulus, mp, rng);
 
-    /* Check for k == 1 or k == order+1. Result will be 0 point which is not
-     * correct. Calculates 2 * order and get 0 point then adds base point
-     * which results in 0 point with constant time implementation)
+    /* Check for k == order - 1. Result will be 0 point which is not correct
+     * Calculates order / 2 and adds order / 2 + 1 and gets infinity.
+     * (with constant time implementation)
      */
    if (err == MP_OKAY)
-      err = mp_add_d(order, 1, &t);
+      err = mp_sub_d(order, 1, &t);
    if (err == MP_OKAY) {
-      int kIsOne = (mp_cmp_d(k, 1) == MP_EQ) | (mp_cmp(k, &t) == MP_EQ);
-      err = mp_cond_copy(tG->x, kIsOne, R->x);
+      int kIsMinusOne = (mp_cmp(k, &t) == MP_EQ);
+      err = mp_cond_copy(tG->x, kIsMinusOne, R->x);
       if (err == 0) {
-          err = mp_cond_copy(tG->y, kIsOne, R->y);
+          err = mp_sub(modulus, tG->y, &t);
       }
       if (err == 0) {
-          err = mp_cond_copy(tG->z, kIsOne, R->z);
+          err = mp_cond_copy(&t, kIsMinusOne, R->y);
+      }
+      if (err == 0) {
+          err = mp_cond_copy(tG->z, kIsMinusOne, R->z);
       }
    }
 
-   mp_forcezero(&t);
    mp_free(&t);
 #else
    err = ecc_mulmod(k, tG, R, M, a, modulus, mp, rng);
@@ -4403,9 +4369,10 @@ int wc_ecc_make_pub_ex(ecc_key* key, ecc_point* pubOut, WC_RNG* rng)
 }
 
 
-WOLFSSL_ABI
-int wc_ecc_make_key_ex(WC_RNG* rng, int keysize, ecc_key* key, int curve_id)
+int wc_ecc_make_key_ex2(WC_RNG* rng, int keysize, ecc_key* key, int curve_id,
+                        int flags)
 {
+
     int err;
 #if !defined(WOLFSSL_ATECC508A) && !defined(WOLFSSL_ATECC608A) && \
     !defined(WOLFSSL_CRYPTOCELL)
@@ -4432,6 +4399,8 @@ int wc_ecc_make_key_ex(WC_RNG* rng, int keysize, ecc_key* key, int curve_id)
     if (err != 0) {
         return err;
     }
+
+    key->flags = flags;
 
 #ifdef WOLF_CRYPTO_CB
     if (key->devId != INVALID_DEVID) {
@@ -4607,6 +4576,12 @@ int wc_ecc_make_key_ex(WC_RNG* rng, int keysize, ecc_key* key, int curve_id)
 #endif /* WOLFSSL_ATECC508A */
 
     return err;
+}
+
+WOLFSSL_ABI
+int wc_ecc_make_key_ex(WC_RNG* rng, int keysize, ecc_key* key, int curve_id)
+{
+    return wc_ecc_make_key_ex2(rng, keysize, key, curve_id, WC_ECC_FLAG_NONE);
 }
 
 #ifdef ECC_DUMP_OID
@@ -5647,6 +5622,83 @@ int wc_ecc_free(ecc_key* key)
     return 0;
 }
 
+#ifndef WOLFSSL_SP_MATH
+/* Handles add failure cases:
+ *
+ * Before add:
+ *   Case 1: A is infinity
+ *        -> Copy B into result.
+ *   Case 2: B is infinity
+ *        -> Copy A into result.
+ *   Case 3: x and z are the same in A and B (same x value in affine)
+ *     Case 3a: y values the same - same point
+ *           -> Double instead of add.
+ *     Case 3b: y values different - negative of the other when points on curve
+ *           -> Need to set result to infinity.
+ *
+ * After add:
+ *   Case 1: A and B are the same point (maybe different z)
+ *           (Result was: x == y == z == 0)
+ *        -> Need to double instead.
+ *
+ *   Case 2: A + B = <infinity> = 0.
+ *           (Result was: z == 0, x and/or y not 0)
+ *        -> Need to set result to infinity.
+ */
+int ecc_projective_add_point_safe(ecc_point* A, ecc_point* B, ecc_point* R,
+    mp_int* a, mp_int* modulus, mp_digit mp, int* infinity)
+{
+    int err;
+
+    if (mp_iszero(A->x) && mp_iszero(A->y)) {
+        /* A is infinity. */
+        err = wc_ecc_copy_point(B, R);
+    }
+    else if (mp_iszero(B->x) && mp_iszero(B->y)) {
+        /* B is infinity. */
+        err = wc_ecc_copy_point(A, R);
+    }
+    else if ((mp_cmp(A->x, B->x) == MP_EQ) && (mp_cmp(A->z, B->z) == MP_EQ)) {
+        /* x ordinattes the same. */
+        if (mp_cmp(A->y, B->y) == MP_EQ) {
+            /* A = B */
+            err = ecc_projective_dbl_point(B, R, a, modulus, mp);
+        }
+        else {
+            /* A = -B */
+            err = mp_set(R->x, 0);
+            if (err == MP_OKAY)
+                err = mp_set(R->y, 0);
+            if (err == MP_OKAY)
+                err = mp_set(R->z, 1);
+            if ((err == MP_OKAY) && (infinity != NULL))
+                *infinity = 1;
+        }
+    }
+    else {
+        err = ecc_projective_add_point(A, B, R, a, modulus, mp);
+        if ((err == MP_OKAY) && mp_iszero(R->z)) {
+            /* When all zero then should have done a double */
+            if (mp_iszero(R->x) && mp_iszero(R->y)) {
+                err = ecc_projective_dbl_point(B, R, a, modulus, mp);
+            }
+            /* When only Z zero then result is infinity */
+            else {
+                err = mp_set(R->x, 0);
+                if (err == MP_OKAY)
+                    err = mp_set(R->y, 0);
+                if (err == MP_OKAY)
+                    err = mp_set(R->z, 1);
+                if ((err == MP_OKAY) && (infinity != NULL))
+                    *infinity = 1;
+            }
+        }
+    }
+
+    return err;
+}
+#endif
+
 #if !defined(WOLFSSL_SP_MATH) && !defined(WOLFSSL_ATECC508A) && \
     !defined(WOLFSSL_ATECC608A) && !defined(WOLFSSL_CRYPTOCELL)
 #ifdef ECC_SHAMIR
@@ -5829,28 +5881,33 @@ int ecc_mul2add(ecc_point* A, mp_int* kA,
   #endif
   }
 
-  if (err == MP_OKAY)
+  if (err == MP_OKAY) {
     /* precomp [i,0](A + B) table */
     err = ecc_projective_dbl_point(precomp[1], precomp[2], a, modulus, mp);
+  }
+  if (err == MP_OKAY) {
+    err = ecc_projective_add_point_safe(precomp[1], precomp[2], precomp[3],
+                                                          a, modulus, mp, NULL);
+  }
 
-  if (err == MP_OKAY)
-    err = ecc_projective_add_point(precomp[1], precomp[2], precomp[3],
-                                   a, modulus, mp);
-  if (err == MP_OKAY)
+  if (err == MP_OKAY) {
     /* precomp [0,i](A + B) table */
-    err = ecc_projective_dbl_point(precomp[1<<2], precomp[2<<2], a, modulus, mp);
-
-  if (err == MP_OKAY)
-    err = ecc_projective_add_point(precomp[1<<2], precomp[2<<2], precomp[3<<2],
-                                   a, modulus, mp);
+    err = ecc_projective_dbl_point(precomp[1<<2], precomp[2<<2], a, modulus,
+                                                                            mp);
+  }
+  if (err == MP_OKAY) {
+    err = ecc_projective_add_point_safe(precomp[1<<2], precomp[2<<2],
+                                           precomp[3<<2], a, modulus, mp, NULL);
+  }
 
   if (err == MP_OKAY) {
     /* precomp [i,j](A + B) table (i != 0, j != 0) */
     for (x = 1; x < 4; x++) {
       for (y = 1; y < 4; y++) {
         if (err == MP_OKAY) {
-          err = ecc_projective_add_point(precomp[x], precomp[(y<<2)],
-                                             precomp[x+(y<<2)], a, modulus, mp);
+          err = ecc_projective_add_point_safe(precomp[x], precomp[(y<<2)],
+                                                  precomp[x+(y<<2)], a, modulus,
+                                                  mp, NULL);
         }
       }
     }
@@ -5897,48 +5954,28 @@ int ecc_mul2add(ecc_point* A, mp_int* kA,
 
         /* if not both zero */
         if ((nA != 0) || (nB != 0)) {
+            int i = nA + (nB<<2);
             if (first == 1) {
                 /* if first, copy from table */
                 first = 0;
                 if (err == MP_OKAY)
-                    err = mp_copy(precomp[nA + (nB<<2)]->x, C->x);
+                    err = mp_copy(precomp[i]->x, C->x);
 
                 if (err == MP_OKAY)
-                    err = mp_copy(precomp[nA + (nB<<2)]->y, C->y);
+                    err = mp_copy(precomp[i]->y, C->y);
 
                 if (err == MP_OKAY)
-                    err = mp_copy(precomp[nA + (nB<<2)]->z, C->z);
+                    err = mp_copy(precomp[i]->z, C->z);
                 else
                     break;
             } else {
                 /* if not first, add from table */
                 if (err == MP_OKAY)
-                    err = ecc_projective_add_point(C, precomp[nA + (nB<<2)], C,
-                                                   a, modulus, mp);
+                    err = ecc_projective_add_point_safe(C, precomp[i],
+                                                        C, a, modulus, mp,
+                                                        &first);
                 if (err != MP_OKAY)
                     break;
-                if (mp_iszero(C->z)) {
-                    /* When all zero then should have done an add */
-                    if (mp_iszero(C->x) && mp_iszero(C->y)) {
-                        err = ecc_projective_dbl_point(precomp[nA + (nB<<2)], C,
-                                                       a, modulus, mp);
-                        if (err != MP_OKAY)
-                            break;
-                    }
-                    /* When only Z zero then result is infinity */
-                    else {
-                        err = mp_set(C->x, 0);
-                        if (err != MP_OKAY)
-                            break;
-                        err = mp_set(C->y, 0);
-                        if (err != MP_OKAY)
-                            break;
-                        err = mp_set(C->z, 1);
-                        if (err != MP_OKAY)
-                            break;
-                        first = 1;
-                    }
-                }
             }
         }
     }
@@ -6535,23 +6572,8 @@ int wc_ecc_verify_hash_ex(mp_int *r, mp_int *s, const byte* hash,
 
             /* add them */
             if (err == MP_OKAY)
-                err = ecc_projective_add_point(mQ, mG, mG, curve->Af,
-                                                              curve->prime, mp);
-            if (err == MP_OKAY && mp_iszero(mG->z)) {
-                /* When all zero then should have done an add */
-                if (mp_iszero(mG->x) && mp_iszero(mG->y)) {
-                    err = ecc_projective_dbl_point(mQ, mG, curve->Af,
-                                                              curve->prime, mp);
-                }
-                /* When only Z zero then result is infinity */
-                else {
-                    err = mp_set(mG->x, 0);
-                    if (err == MP_OKAY)
-                        err = mp_set(mG->y, 0);
-                    if (err == MP_OKAY)
-                        err = mp_set(mG->z, 1);
-                }
-            }
+                err = ecc_projective_add_point_safe(mQ, mG, mG, curve->Af,
+                                                        curve->prime, mp, NULL);
         }
         else {
             /* compute 0*mG + u2*mQ = mG */
@@ -7321,10 +7343,12 @@ static int ecc_check_pubkey_order(ecc_key* key, ecc_point* pubkey, mp_int* a,
         if (err == MP_OKAY && !wc_ecc_point_is_at_infinity(inf))
             err = ECC_INF_E;
 #else
+        {
             (void)a;
             (void)prime;
 
             err = WC_KEY_SIZE_E;
+        }
 #endif
     }
 
@@ -9257,7 +9281,8 @@ static int accel_fp_mul(int idx, mp_int* k, ecc_point *R, mp_int* a,
    unsigned char kb[KB_SIZE];
 #endif
    int      x, err;
-   unsigned y, z = 0, bitlen, bitpos, lut_gap, first;
+   unsigned y, z = 0, bitlen, bitpos, lut_gap;
+   int first;
    mp_int   tk, order;
 
    if (mp_init_multi(&tk, &order, NULL, NULL, NULL, NULL) != MP_OKAY)
@@ -9352,34 +9377,9 @@ static int accel_fp_mul(int idx, mp_int* k, ecc_point *R, mp_int* a,
 
           /* add if not first, otherwise copy */
           if (!first && z) {
-             if ((err = ecc_projective_add_point(R, fp_cache[idx].LUT[z], R, a,
-                                                     modulus, mp)) != MP_OKAY) {
+             if ((err = ecc_projective_add_point_safe(R, fp_cache[idx].LUT[z],
+                                       R, a, modulus, mp, &first)) != MP_OKAY) {
                 break;
-             }
-             if (mp_iszero(R->z)) {
-                 /* When all zero then should have done an add */
-                 if (mp_iszero(R->x) && mp_iszero(R->y)) {
-                     if ((err = ecc_projective_dbl_point(fp_cache[idx].LUT[z],
-                                               R, a, modulus, mp)) != MP_OKAY) {
-                         break;
-                     }
-                 }
-                 /* When only Z zero then result is infinity */
-                 else {
-                    err = mp_set(R->x, 0);
-                    if (err != MP_OKAY) {
-                       break;
-                    }
-                    err = mp_set(R->y, 0);
-                    if (err != MP_OKAY) {
-                       break;
-                    }
-                    err = mp_copy(&fp_cache[idx].mu, R->z);
-                    if (err != MP_OKAY) {
-                       break;
-                    }
-                    first = 1;
-                 }
              }
           } else if (z) {
              if ((mp_copy(fp_cache[idx].LUT[z]->x, R->x) != MP_OKAY) ||
@@ -9436,7 +9436,8 @@ static int accel_fp_mul2add(int idx1, int idx2,
    unsigned char kb[2][KB_SIZE];
 #endif
    int      x, err;
-   unsigned y, z, bitlen, bitpos, lut_gap, first, zA, zB;
+   unsigned y, z, bitlen, bitpos, lut_gap, zA, zB;
+   int first;
    mp_int tka, tkb, order;
 
    if (mp_init_multi(&tka, &tkb, &order, NULL, NULL, NULL) != MP_OKAY)
@@ -9588,68 +9589,18 @@ static int accel_fp_mul2add(int idx1, int idx2,
 
              /* add if not first, otherwise copy */
              if (zA) {
-                if ((err = ecc_projective_add_point(R, fp_cache[idx1].LUT[zA],
-                                               R, a, modulus, mp)) != MP_OKAY) {
+                if ((err = ecc_projective_add_point_safe(R,
+                                             fp_cache[idx1].LUT[zA], R, a,
+                                             modulus, mp, &first)) != MP_OKAY) {
                    break;
-                }
-                if (mp_iszero(R->z)) {
-                    /* When all zero then should have done an add */
-                    if (mp_iszero(R->x) && mp_iszero(R->y)) {
-                        if ((err = ecc_projective_dbl_point(
-                                                  fp_cache[idx1].LUT[zA], R,
-                                                  a, modulus, mp)) != MP_OKAY) {
-                            break;
-                        }
-                    }
-                    /* When only Z zero then result is infinity */
-                    else {
-                       err = mp_set(R->x, 0);
-                       if (err != MP_OKAY) {
-                          break;
-                       }
-                       err = mp_set(R->y, 0);
-                       if (err != MP_OKAY) {
-                          break;
-                       }
-                       err = mp_copy(&fp_cache[idx1].mu, R->z);
-                       if (err != MP_OKAY) {
-                          break;
-                       }
-                       first = 1;
-                    }
                 }
              }
 
              if (zB) {
-                if ((err = ecc_projective_add_point(R, fp_cache[idx2].LUT[zB],
-                                               R, a, modulus, mp)) != MP_OKAY) {
+                if ((err = ecc_projective_add_point_safe(R,
+                                             fp_cache[idx2].LUT[zB], R, a,
+                                             modulus, mp, &first)) != MP_OKAY) {
                    break;
-                }
-                if (mp_iszero(R->z)) {
-                    /* When all zero then should have done an add */
-                    if (mp_iszero(R->x) && mp_iszero(R->y)) {
-                        if ((err = ecc_projective_dbl_point(
-                                                  fp_cache[idx2].LUT[zB], R,
-                                                  a, modulus, mp)) != MP_OKAY) {
-                            break;
-                        }
-                    }
-                    /* When only Z zero then result is infinity */
-                    else {
-                       err = mp_set(R->x, 0);
-                       if (err != MP_OKAY) {
-                          break;
-                       }
-                       err = mp_set(R->y, 0);
-                       if (err != MP_OKAY) {
-                          break;
-                       }
-                       err = mp_copy(&fp_cache[idx2].mu, R->z);
-                       if (err != MP_OKAY) {
-                          break;
-                       }
-                       first = 1;
-                    }
                 }
              }
           } else {
@@ -9664,35 +9615,10 @@ static int accel_fp_mul2add(int idx1, int idx2,
              }
              if (zB && first == 0) {
                 if (zB) {
-                   if ((err = ecc_projective_add_point(R,
-                        fp_cache[idx2].LUT[zB], R, a, modulus, mp)) != MP_OKAY){
+                   if ((err = ecc_projective_add_point_safe(R,
+                                              fp_cache[idx2].LUT[zB], R, a,
+                                              modulus, mp, &first)) != MP_OKAY){
                       break;
-                   }
-                   if (mp_iszero(R->z)) {
-                       /* When all zero then should have done an add */
-                       if (mp_iszero(R->x) && mp_iszero(R->y)) {
-                           if ((err = ecc_projective_dbl_point(
-                                                  fp_cache[idx2].LUT[zB], R,
-                                                  a, modulus, mp)) != MP_OKAY) {
-                               break;
-                           }
-                       }
-                       /* When only Z zero then result is infinity */
-                       else {
-                          err = mp_set(R->x, 0);
-                          if (err != MP_OKAY) {
-                             break;
-                          }
-                          err = mp_set(R->y, 0);
-                          if (err != MP_OKAY) {
-                             break;
-                          }
-                          err = mp_copy(&fp_cache[idx2].mu, R->z);
-                          if (err != MP_OKAY) {
-                             break;
-                          }
-                          first = 1;
-                       }
                    }
                 }
              } else if (zB && first == 1) {
@@ -9971,52 +9897,6 @@ int wc_ecc_mulmod_ex(mp_int* k, ecc_point *G, ecc_point *R, mp_int* a,
 #endif
 }
 
-#ifndef WOLFSSL_SP_MATH
-static int normal_ecc_mulmod_ex(mp_int* k, ecc_point *G, ecc_point *R,
-                                mp_int* a, mp_int* modulus, mp_int* order,
-                                WC_RNG* rng, int map, void* heap)
-{
-    int err;
-    mp_int t;
-    mp_int o;
-    mp_digit mask;
-    int i;
-
-    if ((err = mp_init(&t)) != MP_OKAY)
-        return err;
-    if ((err = mp_init(&o)) != MP_OKAY) {
-        mp_free(&t);
-        return err;
-    }
-
-    /* Make k at 1 bit longer than order. */
-    if (err == MP_OKAY) {
-        err = mp_add(k, order, &t);
-    }
-    if (err == MP_OKAY) {
-        err = mp_copy(order, &o);
-    }
-    if (err == MP_OKAY) {
-        /* Only add if order + k has same number of bits as order */
-        mask = (mp_digit)0 - (mp_count_bits(&t) == mp_count_bits(order));
-        for (i = 0; i < o.used; i++) {
-            o.dp[i] &= mask;
-        }
-        err = mp_add(&t, &o, &t);
-    }
-
-    if (err == MP_OKAY) {
-       err = normal_ecc_mulmod(&t, G, R, a, modulus, rng, map, heap);
-    }
-
-    mp_forcezero(&t);
-    mp_free(&o);
-    mp_free(&t);
-
-    return err;
-}
-#endif /* !WOLFSSL_SP_MATH */
-
 /** ECC Fixed Point mulmod global
     k        The multiplicand
     G        Base point to multiply
@@ -10103,8 +9983,7 @@ int wc_ecc_mulmod_ex2(mp_int* k, ecc_point *G, ecc_point *R, mp_int* a,
            if (err == MP_OKAY)
              err = accel_fp_mul(idx, k, R, a, modulus, mp, map);
         } else {
-          err = normal_ecc_mulmod_ex(k, G, R, a, modulus, order, rng, map,
-                                                                          heap);
+          err = normal_ecc_mulmod(k, G, R, a, modulus, rng, map, heap);
         }
      }
 
@@ -10115,6 +9994,8 @@ int wc_ecc_mulmod_ex2(mp_int* k, ecc_point *G, ecc_point *R, mp_int* a,
 
     return err;
 #else
+    (void)rng;
+
    if (k == NULL || G == NULL || R == NULL || a == NULL || modulus == NULL ||
                                                                 order == NULL) {
         return ECC_BAD_ARG_E;
@@ -10808,104 +10689,33 @@ int wc_ecc_decrypt(ecc_key* privKey, ecc_key* pubKey, const byte* msg,
     !defined(WOLFSSL_CRYPTOCELL)
 
 #ifndef WOLFSSL_SP_MATH
-int do_mp_jacobi(mp_int* a, mp_int* n, int* c);
-
-int do_mp_jacobi(mp_int* a, mp_int* n, int* c)
-{
-  int      k, s, res;
-  int      r = 0; /* initialize to help static analysis out */
-  mp_digit residue;
-
-  /* if a < 0 return MP_VAL */
-  if (mp_isneg(a) == MP_YES) {
-     return MP_VAL;
-  }
-
-  /* if n <= 0 return MP_VAL */
-  if (mp_cmp_d(n, 0) != MP_GT) {
-     return MP_VAL;
-  }
-
-  /* step 1. handle case of a == 0 */
-  if (mp_iszero (a) == MP_YES) {
-     /* special case of a == 0 and n == 1 */
-     if (mp_cmp_d (n, 1) == MP_EQ) {
-       *c = 1;
-     } else {
-       *c = 0;
-     }
-     return MP_OKAY;
-  }
-
-  /* step 2.  if a == 1, return 1 */
-  if (mp_cmp_d (a, 1) == MP_EQ) {
-    *c = 1;
-    return MP_OKAY;
-  }
-
-  /* default */
-  s = 0;
-
-  /* divide out larger power of two */
-  k = mp_cnt_lsb(a);
-  res = mp_div_2d(a, k, a, NULL);
-
-  if (res == MP_OKAY) {
-    /* step 4.  if e is even set s=1 */
-    if ((k & 1) == 0) {
-      s = 1;
-    } else {
-      /* else set s=1 if p = 1/7 (mod 8) or s=-1 if p = 3/5 (mod 8) */
-      residue = n->dp[0] & 7;
-
-      if (residue == 1 || residue == 7) {
-        s = 1;
-      } else if (residue == 3 || residue == 5) {
-        s = -1;
-      }
-    }
-
-    /* step 5.  if p == 3 (mod 4) *and* a == 3 (mod 4) then s = -s */
-    if ( ((n->dp[0] & 3) == 3) && ((a->dp[0] & 3) == 3)) {
-      s = -s;
-    }
-  }
-
-  if (res == MP_OKAY) {
-    /* if a == 1 we're done */
-    if (mp_cmp_d(a, 1) == MP_EQ) {
-      *c = s;
-    } else {
-      /* n1 = n mod a */
-      res = mp_mod (n, a, n);
-      if (res == MP_OKAY)
-        res = do_mp_jacobi(n, a, &r);
-
-      if (res == MP_OKAY)
-        *c = s * r;
-    }
-  }
-
-  return res;
-}
-
-
 /* computes the jacobi c = (a | n) (or Legendre if n is prime)
- * HAC pp. 73 Algorithm 2.149
- * HAC is wrong here, as the special case of (0 | 1) is not
- * handled correctly.
  */
 int mp_jacobi(mp_int* a, mp_int* n, int* c)
 {
     mp_int   a1, n1;
     int      res;
+    int      s = 1;
+    int      k;
+    mp_int*  t[2];
+    mp_int*  ts;
+    mp_digit residue;
 
-    /* step 3.  write a = a1 * 2**k  */
+    if (mp_isneg(a) == MP_YES) {
+        return MP_VAL;
+    }
+    if (mp_isneg(n) == MP_YES) {
+        return MP_VAL;
+    }
+    if (mp_iseven(n) == MP_YES) {
+        return MP_VAL;
+    }
+
     if ((res = mp_init_multi(&a1, &n1, NULL, NULL, NULL, NULL)) != MP_OKAY) {
         return res;
     }
 
-    if ((res = mp_copy(a, &a1)) != MP_OKAY) {
+    if ((res = mp_mod(a, n, &a1)) != MP_OKAY) {
         goto done;
     }
 
@@ -10913,7 +10723,52 @@ int mp_jacobi(mp_int* a, mp_int* n, int* c)
         goto done;
     }
 
-    res = do_mp_jacobi(&a1, &n1, c);
+    t[0] = &a1;
+    t[1] = &n1;
+
+    /* Keep reducing until first number is 0. */
+    while (!mp_iszero(t[0])) {
+        /* Divide by 2 until odd. */
+        k = mp_cnt_lsb(t[0]);
+        if (k > 0) {
+            mp_rshb(t[0], k);
+
+            /* Negate s each time we divide by 2 if t[1] mod 8 == 3 or 5.
+             * Odd number of divides results in a negate.
+             */
+            residue = t[1]->dp[0] & 7;
+            if ((k & 1) && ((residue == 3) || (residue == 5))) {
+                s = -s;
+            }
+        }
+
+        /* Swap t[0] and t[1]. */
+        ts   = t[0];
+        t[0] = t[1];
+        t[1] = ts;
+
+        /* Negate s if both numbers == 3 mod 4. */
+        if (((t[0]->dp[0] & 3) == 3) && ((t[1]->dp[0] & 3) == 3)) {
+             s = -s;
+        }
+
+        /* Reduce first number modulo second. */
+        if ((k == 0) && (mp_count_bits(t[0]) == mp_count_bits(t[1]))) {
+            res = mp_sub(t[0], t[1], t[0]);
+        }
+        else {
+            res = mp_mod(t[0], t[1], t[0]);
+        }
+        if (res != MP_OKAY) {
+            goto done;
+        }
+    }
+
+    /* When the two numbers have divisors in common. */
+    if (!mp_isone(t[1])) {
+        s = 0;
+    }
+    *c = s;
 
 done:
   /* cleanup */

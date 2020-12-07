@@ -103,7 +103,7 @@ word32 CheckRunTimeFastMath(void)
 
 /* Functions */
 
-static int fp_cmp_mag_ct(fp_int *a, fp_int *b, int len)
+static fp_digit fp_cmp_mag_ct(fp_int *a, fp_int *b, int len)
 {
   int i;
   fp_digit r = FP_EQ;
@@ -120,7 +120,7 @@ static int fp_cmp_mag_ct(fp_int *a, fp_int *b, int len)
     mask &= (ad < bd) - 1;
   }
 
-  return (int)r;
+  return r;
 }
 
 int fp_add(fp_int *a, fp_int *b, fp_int *c)
@@ -272,7 +272,7 @@ int fp_mul(fp_int *A, fp_int *B, fp_int *C)
     yy = MIN(A->used, B->used);
 
     /* fail if we are out of range */
-    if (y + yy > FP_SIZE) {
+    if (y + yy >= FP_SIZE) {
        ret = FP_VAL;
        goto clean;
     }
@@ -753,7 +753,12 @@ int fp_div(fp_int *a, fp_int *b, fp_int *c, fp_int *d)
       fp_word tmp;
       tmp = ((fp_word) x->dp[i]) << ((fp_word) DIGIT_BIT);
       tmp |= ((fp_word) x->dp[i - 1]);
+#ifdef WOLFSSL_LINUXKM
+      /* Linux kernel macro for in-place 64 bit integer division. */
+      do_div(tmp, (fp_word)y->dp[t]);
+#else
       tmp /= ((fp_word)y->dp[t]);
+#endif
       q->dp[i - t - 1] = (fp_digit) (tmp);
     }
 
@@ -1430,6 +1435,10 @@ int fp_invmod_mont_ct(fp_int *a, fp_int *b, fp_int *c, fp_digit mp)
   fp_int* pre;
 #endif
 
+  if ((a->used * 2 > FP_MAX_BITS) || (b->used * 2 > FP_MAX_BITS)) {
+    return FP_VAL;
+  }
+
 #ifdef WOLFSSL_SMALL_STACK
   t = (fp_int*)XMALLOC(sizeof(fp_int) * (2 + CT_INV_MOD_PRE_CNT), NULL,
                                                            DYNAMIC_TYPE_BIGINT);
@@ -1599,7 +1608,7 @@ int fp_submod_ct(fp_int *a, fp_int *b, fp_int *c, fp_int *d)
   fp_digit mask;
   int i;
 
-  mask = 0 - (fp_cmp_mag_ct(a, b, c->used + 1) == FP_LT);
+  mask = 0 - (fp_cmp_mag_ct(a, b, c->used + 1) == (fp_digit)FP_LT);
   for (i = 0; i < c->used + 1; i++) {
       fp_digit mask_a = 0 - (i < a->used);
 
@@ -1625,7 +1634,7 @@ int fp_addmod_ct(fp_int *a, fp_int *b, fp_int *c, fp_int *d)
   int i;
 
   s_fp_add(a, b, d);
-  mask = 0 - (fp_cmp_mag_ct(d, c, c->used + 1) != FP_LT);
+  mask = 0 - (fp_cmp_mag_ct(d, c, c->used + 1) != (fp_digit)FP_LT);
   for (i = 0; i < c->used; i++) {
       w        += c->dp[i] & mask;
       w         = d->dp[i] - w;
@@ -1829,13 +1838,17 @@ int fp_exptmod_nb(exptModNb_t* nb, fp_int* G, fp_int* X, fp_int* P, fp_int* Y)
 
   case TFM_EXPTMOD_NB_SQR:
   #ifdef WC_NO_CACHE_RESISTANT
-    fp_sqr(&nb->R[nb->y], &nb->R[nb->y]);
+    err = fp_sqr(&nb->R[nb->y], &nb->R[nb->y]);
   #else
     fp_copy((fp_int*) ( ((wolfssl_word)&nb->R[0] & wc_off_on_addr[nb->y^1]) +
                         ((wolfssl_word)&nb->R[1] & wc_off_on_addr[nb->y]) ),
             &nb->R[2]);
-    fp_sqr(&nb->R[2], &nb->R[2]);
+    err = fp_sqr(&nb->R[2], &nb->R[2]);
   #endif /* WC_NO_CACHE_RESISTANT */
+    if (err != FP_OKAY) {
+      nb->state = TFM_EXPTMOD_NB_INIT;
+      return err;
+    }
 
     nb->state = TFM_EXPTMOD_NB_SQR_RED;
     break;
@@ -2126,7 +2139,14 @@ static int _fp_exptmod_nct(fp_int * G, fp_int * X, fp_int * P, fp_int * Y)
    * squaring M[1] (winsize-1) times */
   fp_copy (&M[1], &M[(word32)(1 << (winsize - 1))]);
   for (x = 0; x < (winsize - 1); x++) {
-    fp_sqr (&M[(word32)(1 << (winsize - 1))], &M[(word32)(1 << (winsize - 1))]);
+    err = fp_sqr (&M[(word32)(1 << (winsize - 1))],
+                  &M[(word32)(1 << (winsize - 1))]);
+    if (err != FP_OKAY) {
+#ifndef WOLFSSL_NO_MALLOC
+      XFREE(M, NULL, DYNAMIC_TYPE_BIGINT);
+#endif
+      return err;
+    }
     err = fp_montgomery_reduce_ex(&M[(word32)(1 << (winsize - 1))], P, mp, 0);
     if (err != FP_OKAY) {
 #ifndef WOLFSSL_NO_MALLOC
@@ -2939,9 +2959,9 @@ int fp_sqr(fp_int *A, fp_int *B)
     oldused = B->used;
     y = A->used;
 
-    /* call generic if we're out of range */
-    if (y + y > FP_SIZE) {
-       err = fp_sqr_comba(A, B);
+    /* error if we're out of range */
+    if (y + y >= FP_SIZE) {
+       err = FP_VAL;
        goto clean;
     }
 
@@ -4300,6 +4320,12 @@ void fp_copy(fp_int *a, fp_int *b)
     }
 }
 
+int mp_init_copy(fp_int * a, fp_int * b)
+{
+    fp_init_copy(a, b);
+    return MP_OKAY;
+}
+
 void fp_init_copy(fp_int *a, fp_int* b)
 {
     if (a != b) {
@@ -4413,6 +4439,41 @@ int mp_montgomery_calc_normalization(mp_int *a, mp_int *b)
 }
 
 #endif /* WOLFSSL_KEYGEN || HAVE_ECC */
+
+static int fp_cond_swap_ct (mp_int * a, mp_int * b, int c, int m)
+{
+    int i;
+    mp_digit mask = (mp_digit)0 - m;
+#ifndef WOLFSSL_SMALL_STACK
+    fp_int  t[1];
+#else
+    fp_int* t;
+#endif
+
+#ifdef WOLFSSL_SMALL_STACK
+   t = (fp_int*)XMALLOC(sizeof(fp_int), NULL, DYNAMIC_TYPE_BIGINT);
+   if (t == NULL)
+       return FP_MEM;
+#endif
+
+    t->used = (a->used ^ b->used) & mask;
+    for (i = 0; i < c; i++) {
+        t->dp[i] = (a->dp[i] ^ b->dp[i]) & mask;
+    }
+    a->used ^= t->used;
+    for (i = 0; i < c; i++) {
+        a->dp[i] ^= t->dp[i];
+    }
+    b->used ^= t->used;
+    for (i = 0; i < c; i++) {
+        b->dp[i] ^= t->dp[i];
+    }
+
+#ifdef WOLFSSL_SMALL_STACK
+    XFREE(t, NULL, DYNAMIC_TYPE_BIGINT);
+#endif
+    return FP_OKAY;
+}
 
 
 #if defined(WC_MP_TO_RADIX) || !defined(NO_DH) || !defined(NO_DSA) || \
@@ -4554,7 +4615,13 @@ static int fp_div_d(fp_int *a, fp_digit b, fp_int *c, fp_digit *d)
      w = (w << ((fp_word)DIGIT_BIT)) | ((fp_word)a->dp[ix]);
 
      if (w >= b) {
+#ifdef WOLFSSL_LINUXKM
+        t = (fp_digit)w;
+	/* Linux kernel macro for in-place 64 bit integer division. */
+        do_div(t, b);
+#else
         t = (fp_digit)(w / b);
+#endif
         w -= ((fp_word)t) * ((fp_word)b);
       } else {
         t = 0;
@@ -4674,7 +4741,9 @@ static int fp_prime_miller_rabin_ex(fp_int * a, fp_int * b, int *result,
     j = 1;
     /* while j <= s-1 and y != n1 */
     while ((j <= (s - 1)) && fp_cmp (y, n1) != FP_EQ) {
-      fp_sqrmod (y, a, y);
+      err = fp_sqrmod (y, a, y);
+      if (err != FP_OKAY)
+         return err;
 
       /* if y == 1 then composite */
       if (fp_cmp_d (y, 1) == FP_EQ) {
@@ -4961,6 +5030,11 @@ int mp_prime_is_prime_ex(mp_int* a, int t, int* result, WC_RNG* rng)
 }
 #endif /* !NO_RSA || !NO_DSA || !NO_DH || WOLFSSL_KEY_GEN */
 
+
+int mp_cond_swap_ct(mp_int * a, mp_int * b, int c, int m)
+{
+    return fp_cond_swap_ct(a, b, c, m);
+}
 
 #ifdef WOLFSSL_KEY_GEN
 
@@ -5254,21 +5328,21 @@ static int fp_read_radix_16(fp_int *a, const char *str)
   for (i = (int)(XSTRLEN(str) - 1); i >= 0; i--) {
       ch = str[i];
       if (ch >= '0' && ch <= '9')
-          ch -= '0';
+          ch -= (char)'0';
       else if (ch >= 'A' && ch <= 'F')
-          ch -= 'A' - 10;
+          ch -= (char)'A' - 10;
       else if (ch >= 'a' && ch <= 'f')
-          ch -= 'a' - 10;
+          ch -= (char)'a' - 10;
       else
           return FP_VAL;
 
+      k += j == DIGIT_BIT;
+      j &= DIGIT_BIT - 1;
       if (k >= FP_SIZE)
           return FP_VAL;
 
       a->dp[k] |= ((fp_digit)ch) << j;
       j += 4;
-      k += j == DIGIT_BIT;
-      j &= DIGIT_BIT - 1;
   }
 
   a->used = k + 1;
@@ -5392,13 +5466,6 @@ int mp_div_2_mod_ct(mp_int *a, mp_int *b, mp_int *c)
   return fp_div_2_mod_ct(a, b, c);
 }
 
-
-int mp_init_copy(fp_int * a, fp_int * b)
-{
-    fp_init_copy(a, b);
-    return MP_OKAY;
-}
-
 #ifdef HAVE_COMP_KEY
 
 int mp_cnt_lsb(fp_int* a)
@@ -5454,11 +5521,6 @@ int mp_radix_size (mp_int *a, int radix, int *size)
     /* digs is the digit count */
     digs = 0;
 
-    /* if it's negative add one for the sign */
-    if (a->sign == FP_NEG) {
-        ++digs;
-    }
-
 #ifdef WOLFSSL_SMALL_STACK
     t = (fp_int*)XMALLOC(sizeof(fp_int), NULL, DYNAMIC_TYPE_BIGINT);
     if (t == NULL)
@@ -5483,6 +5545,18 @@ int mp_radix_size (mp_int *a, int radix, int *size)
         ++digs;
     }
     fp_zero (t);
+
+#ifndef WC_DISABLE_RADIX_ZERO_PAD
+    /* For hexadecimal output, add zero padding when number of digits is odd */
+    if ((digs & 1) && (radix == 16)) {
+        ++digs;
+    }
+#endif
+
+    /* if it's negative add one for the sign */
+    if (a->sign == FP_NEG) {
+        ++digs;
+    }
 
     /* return digs + 1, the 1 is for the NULL byte that would be required. */
     *size = digs + 1;

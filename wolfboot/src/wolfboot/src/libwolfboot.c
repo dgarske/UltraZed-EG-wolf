@@ -32,6 +32,10 @@
 #   define unit_dbg(...) do{}while(0)
 #endif
 
+#ifndef TRAILER_SKIP
+#   define TRAILER_SKIP 0
+#endif
+
 #if defined(EXT_ENCRYPTED)
     #if defined(__WOLFBOOT)
         #include "encrypt.h"
@@ -43,6 +47,8 @@
         #define XMEMCMP memcmp
     #endif
     #define ENCRYPT_TMP_SECRET_OFFSET (WOLFBOOT_PARTITION_SIZE - (TRAILER_SKIP + ENCRYPT_KEY_SIZE + ENCRYPT_NONCE_SIZE))
+    #define TRAILER_OVERHEAD (4 + 1 + (WOLFBOOT_PARTITION_SIZE  / (2 * WOLFBOOT_SECTOR_SIZE))) /* MAGIC + PART_FLAG (1B) + (N_SECTORS / 2) */
+    #define START_FLAGS_OFFSET (ENCRYPT_TMP_SECRET_OFFSET - TRAILER_OVERHEAD)
 #else
     #define XMEMCPY memcpy
     #define ENCRYPT_TMP_SECRET_OFFSET (WOLFBOOT_PARTITION_SIZE - (TRAILER_SKIP))
@@ -59,13 +65,31 @@ static uint32_t ext_cache;
 #endif
 
 static const uint32_t wolfboot_magic_trail = WOLFBOOT_MAGIC_TRAIL;
+/* Top addresses for FLAGS field
+ *  - PART_BOOT_ENDFLAGS = top of flags for BOOT partition
+ *  - PART_UPDATE_ENDFLAGS = top of flags for UPDATE_PARTITION
+ */
 
+#define PART_BOOT_ENDFLAGS   (WOLFBOOT_PARTITION_BOOT_ADDRESS + ENCRYPT_TMP_SECRET_OFFSET)
+#define FLAGS_BOOT_EXT() PARTN_IS_EXT(PART_BOOT)
 
-#ifndef TRAILER_SKIP
-#   define TRAILER_SKIP 0
-#endif
-#define PART_BOOT_ENDFLAGS   (WOLFBOOT_PARTITION_BOOT_ADDRESS   + ENCRYPT_TMP_SECRET_OFFSET)
+#ifdef FLAGS_HOME
+/*
+ * In FLAGS_HOME mode, all FLAGS live at the end of the boot partition:
+ *                        / -12    /-8       /-4     / END
+ *  |Sn| ... |S2|S1|S0|PU|  MAGIC  |X|X|X|PB| MAGIC |
+ *   ^--sectors   --^  ^--update           ^---boot partition
+ *      flags             partition            flag
+ *                        flag
+ *
+ * */
+#define PART_UPDATE_ENDFLAGS (PART_BOOT_ENDFLAGS - 8)
+#define FLAGS_UPDATE_EXT() PARTN_IS_EXT(PART_BOOT)
+#else
+/* FLAGS are at the end of each partition */
 #define PART_UPDATE_ENDFLAGS (WOLFBOOT_PARTITION_UPDATE_ADDRESS + ENCRYPT_TMP_SECRET_OFFSET)
+#define FLAGS_UPDATE_EXT() PARTN_IS_EXT(PART_UPDATE)
+#endif
 
 #ifdef NVM_FLASH_WRITEONCE
 #include <stddef.h>
@@ -110,7 +134,7 @@ int RAMFUNCTION hal_set_partition_magic(uint32_t addr)
 static uint8_t* RAMFUNCTION get_trailer_at(uint8_t part, uint32_t at)
 {
     if (part == PART_BOOT) {
-        if (PARTN_IS_EXT(PART_BOOT)) {
+        if (FLAGS_BOOT_EXT()){
             ext_flash_check_read(PART_BOOT_ENDFLAGS - (sizeof(uint32_t) + at), (void *)&ext_cache, sizeof(uint32_t));
             return (uint8_t *)&ext_cache;
         } else {
@@ -118,7 +142,7 @@ static uint8_t* RAMFUNCTION get_trailer_at(uint8_t part, uint32_t at)
         }
     }
     else if (part == PART_UPDATE) {
-        if (PARTN_IS_EXT(PART_UPDATE)) {
+        if (FLAGS_UPDATE_EXT()) {
             ext_flash_check_read(PART_UPDATE_ENDFLAGS - (sizeof(uint32_t) + at), (void *)&ext_cache, sizeof(uint32_t));
             return (uint8_t *)&ext_cache;
         } else {
@@ -131,14 +155,14 @@ static uint8_t* RAMFUNCTION get_trailer_at(uint8_t part, uint32_t at)
 static void RAMFUNCTION set_trailer_at(uint8_t part, uint32_t at, uint8_t val)
 {
     if (part == PART_BOOT) {
-        if (PARTN_IS_EXT(PART_BOOT)) {
+        if (FLAGS_BOOT_EXT()) {
             ext_flash_check_write(PART_BOOT_ENDFLAGS - (sizeof(uint32_t) + at), (void *)&val, 1);
         } else {
             hal_trailer_write(PART_BOOT_ENDFLAGS - (sizeof(uint32_t) + at), val);
         }
     }
     else if (part == PART_UPDATE) {
-        if (PARTN_IS_EXT(PART_UPDATE)) {
+        if (FLAGS_UPDATE_EXT()) {
             ext_flash_check_write(PART_UPDATE_ENDFLAGS - (sizeof(uint32_t) + at), (void *)&val, 1);
         } else {
             hal_trailer_write(PART_UPDATE_ENDFLAGS - (sizeof(uint32_t) + at), val);
@@ -149,14 +173,14 @@ static void RAMFUNCTION set_trailer_at(uint8_t part, uint32_t at, uint8_t val)
 static void RAMFUNCTION set_partition_magic(uint8_t part)
 {
     if (part == PART_BOOT) {
-        if (PARTN_IS_EXT(PART_BOOT)) {
+        if (FLAGS_BOOT_EXT()) {
             ext_flash_check_write(PART_BOOT_ENDFLAGS - sizeof(uint32_t), (void *)&wolfboot_magic_trail, sizeof(uint32_t));
         } else {
             hal_set_partition_magic(PART_BOOT_ENDFLAGS - sizeof(uint32_t));
         }
     }
     else if (part == PART_UPDATE) {
-        if (PARTN_IS_EXT(PART_UPDATE)) {
+        if (FLAGS_UPDATE_EXT()) {
             ext_flash_check_write(PART_UPDATE_ENDFLAGS - sizeof(uint32_t), (void *)&wolfboot_magic_trail, sizeof(uint32_t));
         } else {
             hal_set_partition_magic(PART_UPDATE_ENDFLAGS - sizeof(uint32_t));
@@ -208,19 +232,20 @@ static uint8_t* RAMFUNCTION get_partition_state(uint8_t part)
     return (uint8_t *)get_trailer_at(part, 1);
 }
 
-static uint8_t* RAMFUNCTION get_sector_flags(uint8_t part, uint32_t pos)
-{
-    return (uint8_t *)get_trailer_at(part, 2 + pos);
-}
 
 static void RAMFUNCTION set_partition_state(uint8_t part, uint8_t val)
 {
     set_trailer_at(part, 1, val);
 }
 
-static void RAMFUNCTION set_sector_flags(uint8_t part, uint32_t pos, uint8_t val)
+static void RAMFUNCTION set_update_sector_flags(uint32_t pos, uint8_t val)
 {
-    set_trailer_at(part, 2 + pos, val);
+    set_trailer_at(PART_UPDATE, 2 + pos, val);
+}
+
+static uint8_t* RAMFUNCTION get_update_sector_flags(uint32_t pos)
+{
+    return (uint8_t *)get_trailer_at(PART_UPDATE, 2 + pos);
 }
 
 int RAMFUNCTION wolfBoot_set_partition_state(uint8_t part, uint8_t newst)
@@ -236,22 +261,24 @@ int RAMFUNCTION wolfBoot_set_partition_state(uint8_t part, uint8_t newst)
     return 0;
 }
 
-int RAMFUNCTION wolfBoot_set_sector_flag(uint8_t part, uint16_t sector, uint8_t newflag)
+int RAMFUNCTION wolfBoot_set_update_sector_flag(uint16_t sector, uint8_t newflag)
 {
     uint32_t *magic;
     uint8_t *flags;
     uint8_t fl_value;
     uint8_t pos = sector >> 1;
-    magic = get_partition_magic(part);
+
+    magic = get_partition_magic(PART_UPDATE);
     if (*magic != wolfboot_magic_trail)
-        set_partition_magic(part);
-    flags = get_sector_flags(part, pos);
+        set_partition_magic(PART_UPDATE);
+
+    flags = get_update_sector_flags(pos);
     if (sector == (pos << 1))
         fl_value = (*flags & 0xF0) | (newflag & 0x0F);
     else
         fl_value = ((newflag & 0x0F) << 4) | (*flags & 0x0F);
     if (fl_value != *flags)
-        set_sector_flags(part, pos, fl_value);
+        set_update_sector_flags(pos, fl_value);
     return 0;
 }
 
@@ -267,15 +294,15 @@ int RAMFUNCTION wolfBoot_get_partition_state(uint8_t part, uint8_t *st)
     return 0;
 }
 
-int wolfBoot_get_sector_flag(uint8_t part, uint16_t sector, uint8_t *flag)
+int wolfBoot_get_update_sector_flag(uint16_t sector, uint8_t *flag)
 {
     uint32_t *magic;
     uint8_t *flags;
     uint8_t pos = sector >> 1;
-    magic = get_partition_magic(part);
+    magic = get_partition_magic(PART_UPDATE);
     if (*magic != WOLFBOOT_MAGIC_TRAIL)
         return -1;
-    flags = get_sector_flags(part, pos);
+    flags = get_update_sector_flags(pos);
     if (sector == (pos << 1))
         *flag = *flags & 0x0F;
     else
@@ -317,7 +344,18 @@ void RAMFUNCTION wolfBoot_erase_partition(uint8_t part)
 void RAMFUNCTION wolfBoot_update_trigger(void)
 {
     uint8_t st = IMG_STATE_UPDATING;
-    if (PARTN_IS_EXT(PART_UPDATE))
+
+#ifdef FLAGS_HOME
+    /* Erase last sector of boot partition prior to
+     * setting the partition state.
+     */
+    uint32_t last_sector = PART_UPDATE_ENDFLAGS - (PART_UPDATE_ENDFLAGS % WOLFBOOT_SECTOR_SIZE);
+    hal_flash_unlock();
+    hal_flash_erase(last_sector, WOLFBOOT_SECTOR_SIZE);
+    hal_flash_lock();
+#endif
+
+    if (FLAGS_UPDATE_EXT())
     {
         ext_flash_unlock();
         wolfBoot_set_partition_state(PART_UPDATE, st);
@@ -332,7 +370,7 @@ void RAMFUNCTION wolfBoot_update_trigger(void)
 void RAMFUNCTION wolfBoot_success(void)
 {
     uint8_t st = IMG_STATE_SUCCESS;
-    if (PARTN_IS_EXT(PART_BOOT))
+    if (FLAGS_BOOT_EXT())
     {
         ext_flash_unlock();
         wolfBoot_set_partition_state(PART_BOOT, st);
@@ -644,7 +682,7 @@ int ext_flash_encrypt_write(uintptr_t address, const uint8_t *data, int len)
         case PART_UPDATE:
             iv_counter = (address - WOLFBOOT_PARTITION_UPDATE_ADDRESS) / ENCRYPT_BLOCK_SIZE;
             /* Do not encrypt last sectors */
-            if (iv_counter >= (ENCRYPT_TMP_SECRET_OFFSET - ENCRYPT_BLOCK_SIZE) / ENCRYPT_BLOCK_SIZE) {
+            if (iv_counter >= (START_FLAGS_OFFSET - ENCRYPT_BLOCK_SIZE) / ENCRYPT_BLOCK_SIZE) {
                 return ext_flash_write(address, data, len);
             }
             break;
@@ -705,7 +743,7 @@ int ext_flash_decrypt_read(uintptr_t address, uint8_t *data, int len)
         case PART_UPDATE:
             iv_counter = (address - WOLFBOOT_PARTITION_UPDATE_ADDRESS) / ENCRYPT_BLOCK_SIZE;
             /* Do not decrypt last sector */
-            if (iv_counter >= (ENCRYPT_TMP_SECRET_OFFSET - ENCRYPT_BLOCK_SIZE) / ENCRYPT_BLOCK_SIZE) {
+            if (iv_counter >= (START_FLAGS_OFFSET - ENCRYPT_BLOCK_SIZE) / ENCRYPT_BLOCK_SIZE) {
                 return ext_flash_read(address, data, len);
             }
             break;

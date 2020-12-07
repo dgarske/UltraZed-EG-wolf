@@ -20,7 +20,8 @@
  */
 
 #include <stdint.h>
-#include <image.h>
+#include "image.h"
+#include "hal.h"
 
 /* Assembly helpers */
 #define DMB() __asm__ volatile ("dmb")
@@ -84,8 +85,11 @@
 #define PWR_D3CR_VOS_SCALE_1 (3)
 
 #define SYSCFG_BASE          (0x58000400) //RM0433 - Table 8
+#define SYSCFG_PMCR          (*(volatile uint32_t *)(SYSCFG_BASE + 0x04))  //RM0433 - 5.8.4
 #define SYSCFG_PWRCR         (*(volatile uint32_t *)(SYSCFG_BASE + 0x04))  //RM0433 - 5.8.4
+#define SYSCFG_UR0           (*(volatile uint32_t *)(SYSCFG_BASE + 0x300))  //RM0433 - 12.3.1.2
 #define SYSCFG_PWRCR_ODEN    (1 << 0)
+#define SYSCFG_UR0_BKS       (1 << 0)   // bank swap
 
 /*** APB PRESCALER ***/
 #define RCC_PRESCALER_DIV_NONE 0
@@ -96,6 +100,7 @@
 
 #define FLASH_BASE          (0x52002000)   //RM0433 - Table 8
 #define FLASH_ACR           (*(volatile uint32_t *)(FLASH_BASE + 0x00)) //RM0433 - 3.9.1 - FLASH_ACR
+#define FLASH_OPTSR_CUR     (*(volatile uint32_t *)(FLASH_BASE + 0x1C))
 
 /*bank 1 */
 #define FLASH_KEYR1          (*(volatile uint32_t *)(FLASH_BASE + 0x04)) //RM0433 - 3.9.2 - FLASH_KEYR 1
@@ -137,17 +142,47 @@
 #define FLASH_CR_PG                         (1 << 1)
 #define FLASH_CR2_SPSS2                     (1 << 14)
 
+#define FLASH_OPTSR_CUR_BSY                 (1 << 0)
+
 #define FLASH_CR_SNB_SHIFT                  8     //SNB bits 10:8
 #define FLASH_CR_SNB_MASK                   0x7   //SNB bits 10:8 - 3 bits
 
 #define FLASH_KEY1                            (0x45670123)
 #define FLASH_KEY2                            (0xCDEF89AB)
 
+
+/* STM32H7: Due to ECC functionality, it is not possible to write partition/sector
+ * flags and signature more than once. This flags_cache is used to intercept write operations and
+ * ensures that the sector is always erased before each write.
+ */
+
+#define STM32H7_SECTOR_SIZE 0x20000
+
+#if (WOLFBOOT_PARTITION_SIZE < (2 * STM32H7_SECTOR_SIZE))
+#   error "Please use a bigger WOLFBOOT_PARTITION_SIZE, since the last 128KB on each partition will be reserved for bootloader flags"
+#endif
+
+#define STM32H7_PART_BOOT_END (WOLFBOOT_PARTITION_BOOT_ADDRESS + WOLFBOOT_PARTITION_SIZE)
+#define STM32H7_PART_UPDATE_END (WOLFBOOT_PARTITION_UPDATE_ADDRESS + WOLFBOOT_PARTITION_SIZE)
+#define STM32H7_WORD_SIZE (32)
+#define STM32H7_PART_BOOT_FLAGS_PAGE_ADDRESS (((STM32H7_PART_BOOT_END - 1) / STM32H7_SECTOR_SIZE) * STM32H7_SECTOR_SIZE)
+#define STM32H7_PART_UPDATE_FLAGS_PAGE_ADDRESS (((STM32H7_PART_UPDATE_END - 1) / STM32H7_SECTOR_SIZE) * STM32H7_SECTOR_SIZE)
+#define STM32H7_BOOT_FLAGS_PAGE(x) ((x >= STM32H7_PART_BOOT_FLAGS_PAGE_ADDRESS) && (x < STM32H7_PART_BOOT_END))
+#define STM32H7_UPDATE_FLAGS_PAGE(x) ((x >= STM32H7_PART_UPDATE_FLAGS_PAGE_ADDRESS) && (x < STM32H7_PART_UPDATE_END))
+
+static uint32_t stm32h7_cache[STM32H7_WORD_SIZE / sizeof(uint32_t)];
+
 static void RAMFUNCTION flash_set_waitstates(unsigned int waitstates)
 {
     uint32_t reg = FLASH_ACR;
     if ((reg & FLASH_ACR_LATENCY_MASK) != waitstates)
         FLASH_ACR =  (reg & ~FLASH_ACR_LATENCY_MASK) | waitstates ;
+}
+
+static RAMFUNCTION void flash_wait_last(void)
+{
+    while((FLASH_OPTSR_CUR & FLASH_OPTSR_CUR_BSY))
+        ;
 }
 
 static RAMFUNCTION void flash_wait_complete(uint8_t bank)
@@ -166,54 +201,93 @@ static void RAMFUNCTION flash_clear_errors(uint8_t bank)
       FLASH_SR2 |= ( FLASH_SR_WRPERR | FLASH_SR_PGSERR | FLASH_SR_STRBERR |  FLASH_SR_INCERR | FLASH_SR_OPERR |FLASH_SR_RDPERR | FLASH_SR_RDSERR | FLASH_SR_SNECCERR|FLASH_SR_DBECCERR ) ;
 }
 
+static void RAMFUNCTION flash_program_on(uint8_t bank)
+{
+    if (bank == 0) {
+        FLASH_CR1 |= FLASH_CR_PG;
+        while ((FLASH_CR1 & FLASH_CR_PG) == 0)
+            ;
+    } else {
+        FLASH_CR2 |= FLASH_CR_PG;
+        while ((FLASH_CR1 & FLASH_CR_PG) == 0)
+            ;
+    }
+}
+
+static void RAMFUNCTION flash_program_off(uint8_t bank)
+{
+    if (bank == 0) {
+        FLASH_CR1 &= ~FLASH_CR_PG;
+    } else {
+        FLASH_CR2 &= ~FLASH_CR_PG;
+    }
+}
+
 int RAMFUNCTION hal_flash_write(uint32_t address, const uint8_t *data, int len)
 {
-  int i = 0, ii =0;
-  uint32_t *src, *dst, reg;
-  uint8_t bank=0;
+    int i = 0, ii =0;
+    uint32_t *src, *dst;
+    uint8_t bank=0;
+    uint8_t *vbytes = (uint8_t *)(stm32h7_cache);
+    int off = (address + i) - (((address + i) >> 5) << 5);
+    uint32_t base_addr = (address + i) & (~0x1F); /* aligned to 256 bit */
 
-  flash_clear_errors(0);
-  flash_clear_errors(1);
-
-  src = (uint32_t *)data;
-  dst = (uint32_t *)(address + FLASHMEM_ADDRESS_SPACE);
-
-  while (i < len) {
-
-    if (dst < (uint32_t *)(FLASH_BANK2_BASE) )
-    {
-      bank=0;
-      FLASH_CR1 |= FLASH_CR_PG;
+    if ((address & 0x01000000) != 0) {
+        bank = 1;
     }
 
-    if( dst>=((uint32_t *)(FLASH_BANK2_BASE)) && dst <= ((uint32_t *)(FLASH_TOP)))
-    {
-      bank=1;
-      FLASH_CR2 |= FLASH_CR_PG;
+    while (i < len) {
+        if ((len - i > 32) && ((((address + i) & 0x1F) == 0)  && ((((uint32_t)data) + i) & 0x1F) == 0)) {
+            flash_wait_last();
+            flash_clear_errors(0);
+            flash_clear_errors(1);
+            flash_program_on(bank);
+            flash_wait_complete(bank);
+            src = (uint32_t *)(data + i);
+            dst = (uint32_t *)(address + i);
+            for (ii = 0; ii < 8; ii++) {
+                dst[ii] = src[ii];
+            }
+            i+=32;
+        } else {
+            int off = (address + i) - (((address + i) >> 5) << 5);
+            uint32_t base_addr = (address + i) & (~0x1F); /* aligned to 256 bit */
+            dst = (uint32_t *)(base_addr);
+            for (ii = 0; ii < 8; ii++) {
+                stm32h7_cache[ii] = dst[ii];
+            }
+            /* Check if flags page */
+            if (STM32H7_BOOT_FLAGS_PAGE(address)) {
+                if (base_addr != STM32H7_PART_BOOT_END - STM32H7_WORD_SIZE)
+                    return -1;
+                hal_flash_erase(STM32H7_PART_BOOT_FLAGS_PAGE_ADDRESS, STM32H7_SECTOR_SIZE);
+            } else if (STM32H7_UPDATE_FLAGS_PAGE(address)) {
+                if (base_addr != STM32H7_PART_UPDATE_END - STM32H7_WORD_SIZE)
+                    return -1;
+                hal_flash_erase(STM32H7_PART_UPDATE_FLAGS_PAGE_ADDRESS, STM32H7_SECTOR_SIZE);
+            }
+            /* Replace bytes in cache */
+            while ((off < STM32H7_WORD_SIZE) && (i < len))
+                vbytes[off++] = data[i++];
+
+            /* Actual write from cache to FLASH */
+            flash_wait_last();
+            flash_clear_errors(0);
+            flash_clear_errors(1);
+            flash_program_on(bank);
+            flash_wait_complete(bank);
+            ISB();
+            DSB();
+            for (ii = 0; ii < 8; ii++) {
+                dst[ii] = stm32h7_cache[ii];
+            }
+            ISB();
+            DSB();
+        }
+        flash_wait_complete(bank);
+        flash_program_off(bank);
     }
-
-    ISB();
-    DSB();
-    for(ii=0; ii<8;ii++)
-    {
-      *dst=*src;
-      dst++;
-      src++;
-    }
-    ISB();
-    DSB();
-
-    flash_wait_complete(bank);
-
-    if(bank==0)
-      FLASH_CR1 &= ~FLASH_CR_PG;
-    if(bank==1)
-      FLASH_CR2 &= ~FLASH_CR_PG;
-
-    i+=32;
-  }
-
-  return 0;
+    return 0;
 }
 
 void RAMFUNCTION hal_flash_unlock(void)
@@ -257,9 +331,9 @@ int RAMFUNCTION hal_flash_erase(uint32_t address, int len)
 
     if (len == 0)
         return -1;
-    end_address = address + len - 1;
-    for (p = address; p < end_address; p += FLASH_PAGE_SIZE) {
-        if (p < (FLASH_BANK2_BASE -FLASHMEM_ADDRESS_SPACE) )
+    end_address = (address - FLASHMEM_ADDRESS_SPACE) + len - 1;
+    for (p = (address - FLASHMEM_ADDRESS_SPACE); p < end_address; p += FLASH_PAGE_SIZE) {
+        if (p < (FLASH_BANK2_BASE - FLASHMEM_ADDRESS_SPACE) )
         {
           uint32_t reg = FLASH_CR1 & (~((FLASH_CR_SNB_MASK << FLASH_CR_SNB_SHIFT)|FLASH_CR_PSIZE));
           FLASH_CR1 = reg | (((p >> 17) << FLASH_CR_SNB_SHIFT) | FLASH_CR_SER | 0x00);
@@ -267,9 +341,10 @@ int RAMFUNCTION hal_flash_erase(uint32_t address, int len)
           FLASH_CR1 |= FLASH_CR_STRT;
           flash_wait_complete(1);
         }
-        if(p>=(FLASH_BANK2_BASE -FLASHMEM_ADDRESS_SPACE) && (p <= (FLASH_TOP -FLASHMEM_ADDRESS_SPACE) ))
+        if(p>=(FLASH_BANK2_BASE - FLASHMEM_ADDRESS_SPACE) && (p <= (FLASH_TOP - FLASHMEM_ADDRESS_SPACE) ))
         {
           uint32_t reg = FLASH_CR2 & (~((FLASH_CR_SNB_MASK << FLASH_CR_SNB_SHIFT)|FLASH_CR_PSIZE));
+          p-= (FLASH_BANK2_BASE);
           FLASH_CR2 = reg | (((p >> 17) << FLASH_CR_SNB_SHIFT) | FLASH_CR_SER | 0x00);
           DMB();
           FLASH_CR2 |= FLASH_CR_STRT;
@@ -417,6 +492,19 @@ static void clock_pll_on(int powersave)
 
     /* Wait for PLL clock to be selected. */
     while ((RCC_CFGR & ((1 << 2) | (1 << 1) | (1 << 0))) != RCC_CFGR_SW_PLL) {};
+}
+
+void RAMFUNCTION hal_flash_dualbank_swap(void)
+{
+    hal_flash_unlock();
+    DMB();
+    ISB();
+    if (SYSCFG_UR0 & SYSCFG_UR0_BKS)
+        SYSCFG_UR0 &= ~SYSCFG_UR0_BKS;
+    else
+        SYSCFG_UR0 |= SYSCFG_UR0_BKS;
+    DMB();
+    hal_flash_lock();
 }
 
 void hal_init(void)

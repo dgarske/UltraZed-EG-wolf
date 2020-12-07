@@ -191,7 +191,7 @@ typedef struct WOLFSSL_AUTHORITY_KEYID  WOLFSSL_AUTHORITY_KEYID;
 typedef struct WOLFSSL_BASIC_CONSTRAINTS WOLFSSL_BASIC_CONSTRAINTS;
 typedef struct WOLFSSL_ACCESS_DESCRIPTION WOLFSSL_ACCESS_DESCRIPTION;
 
-#if defined(OPENSSL_ALL) || defined(OPENSSL_EXTRA)
+#if defined(OPENSSL_ALL) || defined(OPENSSL_EXTRA) || defined(WOLFSSL_WPAS_SMALL)
 
 struct WOLFSSL_AUTHORITY_KEYID {
     WOLFSSL_ASN1_STRING *keyid;
@@ -743,7 +743,7 @@ typedef int (*wc_dtls_export)(WOLFSSL* ssl,
 #define WOLFSSL_DTLS_EXPORT_TYPES
 #endif /* WOLFSSL_DTLS_EXPORT_TYPES */
 
-WOLFSSL_API int wolfSSL_dtls_import(WOLFSSL* ssl, unsigned char* buf,
+WOLFSSL_API int wolfSSL_dtls_import(WOLFSSL* ssl, const unsigned char* buf,
                                                                unsigned int sz);
 WOLFSSL_API int wolfSSL_CTX_dtls_set_export(WOLFSSL_CTX* ctx,
                                                            wc_dtls_export func);
@@ -2014,7 +2014,7 @@ WOLFSSL_API long wolfSSL_CTX_set_options(WOLFSSL_CTX*, long);
 WOLFSSL_API long wolfSSL_CTX_get_options(WOLFSSL_CTX* ctx);
 WOLFSSL_API long wolfSSL_CTX_clear_options(WOLFSSL_CTX*, long);
 
-#if !defined(NO_FILESYSTEM) && !defined(NO_CHECK_PRIVATE_KEY)
+#if !defined(NO_CHECK_PRIVATE_KEY)
   WOLFSSL_API int  wolfSSL_CTX_check_private_key(const WOLFSSL_CTX*);
 #endif
 WOLFSSL_API void wolfSSL_ERR_free_strings(void);
@@ -2167,7 +2167,7 @@ WOLFSSL_API WOLFSSL_X509*
 WOLFSSL_API int wolfSSL_i2d_X509(WOLFSSL_X509* x509, unsigned char** out);
 WOLFSSL_API WOLFSSL_X509_CRL *wolfSSL_d2i_X509_CRL(WOLFSSL_X509_CRL **crl,
                                                    const unsigned char *in, int len);
-#ifndef NO_FILESYSTEM
+#if !defined(NO_FILESYSTEM) && !defined(NO_STDIO_FILESYSTEM)
 WOLFSSL_API WOLFSSL_X509_CRL *wolfSSL_d2i_X509_CRL_fp(XFILE file, WOLFSSL_X509_CRL **crl);
 #endif
 WOLFSSL_API void wolfSSL_X509_CRL_free(WOLFSSL_X509_CRL *crl);
@@ -2202,7 +2202,7 @@ typedef struct WC_PKCS12 WC_PKCS12;
 WOLFSSL_API WC_PKCS12* wolfSSL_d2i_PKCS12_bio(WOLFSSL_BIO* bio,
                                        WC_PKCS12** pkcs12);
 WOLFSSL_API int wolfSSL_i2d_PKCS12_bio(WOLFSSL_BIO *bio, WC_PKCS12 *pkcs12);
-#ifndef NO_FILESYSTEM
+#if !defined(NO_FILESYSTEM) && !defined(NO_STDIO_FILESYSTEM)
 WOLFSSL_API WOLFSSL_X509_PKCS12* wolfSSL_d2i_PKCS12_fp(XFILE fp,
                                        WOLFSSL_X509_PKCS12** pkcs12);
 #endif
@@ -2772,6 +2772,10 @@ WOLFSSL_API void* wolfSSL_GetRsaDecCtx(WOLFSSL* ssl);
                                                       WOLFSSL_CERT_MANAGER* cm);
     WOLFSSL_API int wolfSSL_CertManagerDisableOCSPStapling(
                                                       WOLFSSL_CERT_MANAGER* cm);
+    WOLFSSL_API int wolfSSL_CertManagerEnableOCSPMustStaple(
+                                                      WOLFSSL_CERT_MANAGER* cm);
+    WOLFSSL_API int wolfSSL_CertManagerDisableOCSPMustStaple(
+                                                      WOLFSSL_CERT_MANAGER* cm);
 #if defined(OPENSSL_EXTRA) && defined(WOLFSSL_SIGNER_DER_CERT) && !defined(NO_FILESYSTEM)
 WOLFSSL_API WOLFSSL_STACK* wolfSSL_CertManagerGetCerts(WOLFSSL_CERT_MANAGER* cm);
 #endif
@@ -2808,6 +2812,8 @@ WOLFSSL_API WOLFSSL_STACK* wolfSSL_CertManagerGetCerts(WOLFSSL_CERT_MANAGER* cm)
                                                CbOCSPIO, CbOCSPRespFree, void*);
     WOLFSSL_API int wolfSSL_CTX_EnableOCSPStapling(WOLFSSL_CTX*);
     WOLFSSL_API int wolfSSL_CTX_DisableOCSPStapling(WOLFSSL_CTX*);
+    WOLFSSL_API int wolfSSL_CTX_EnableOCSPMustStaple(WOLFSSL_CTX*);
+    WOLFSSL_API int wolfSSL_CTX_DisableOCSPMustStaple(WOLFSSL_CTX*);
 #endif /* !NO_CERTS */
 
 
@@ -3233,7 +3239,7 @@ WOLFSSL_API int wolfSSL_accept_ex(WOLFSSL*, HandShakeCallBack, TimeoutCallBack,
 
 #include <wolfssl/openssl/asn1.h>
 struct WOLFSSL_X509_NAME_ENTRY {
-    WOLFSSL_ASN1_OBJECT  object;  /* static object just for keeping grp, type */
+    WOLFSSL_ASN1_OBJECT* object;  /* static object just for keeping grp, type */
     WOLFSSL_ASN1_STRING* value;  /* points to data, for lighttpd port */
     int nid; /* i.e. ASN_COMMON_NAME */
     int set;
@@ -3319,6 +3325,11 @@ WOLFSSL_API int wolfSSL_X509_NAME_copy(WOLFSSL_X509_NAME*, WOLFSSL_X509_NAME*);
 WOLFSSL_API int wolfSSL_check_private_key(const WOLFSSL* ssl);
 #endif /* !NO_CERTS */
 #endif /* OPENSSL_ALL || OPENSSL_EXTRA || OPENSSL_EXTRA_X509_SMALL */
+
+#ifdef WOLFSSL_WPAS_SMALL
+    /* WPA Supplicant requires GEN_ values */
+    #include <wolfssl/openssl/x509v3.h>
+#endif
 
 #if defined(OPENSSL_EXTRA) || defined(WOLFSSL_WPAS_SMALL)
 WOLFSSL_API void* wolfSSL_X509_get_ext_d2i(const WOLFSSL_X509* x509,
@@ -3728,6 +3739,16 @@ WOLFSSL_API int wolfSSL_set_alpn_protos(WOLFSSL* ssl,
 WOLFSSL_API void *wolfSSL_OPENSSL_memdup(const void *data,
     size_t siz, const char* file, int line);
 WOLFSSL_API void wolfSSL_ERR_load_BIO_strings(void);
+#endif
+
+#if defined(HAVE_OCSP) && !defined(NO_ASN_TIME)
+    WOLFSSL_API int wolfSSL_get_ocsp_producedDate(
+        WOLFSSL *ssl,
+        byte *producedDate,
+        size_t producedDate_space,
+        int *producedDateFormat);
+    WOLFSSL_API int wolfSSL_get_ocsp_producedDate_tm(WOLFSSL *ssl,
+        struct tm *produced_tm);
 #endif
 
 #if defined(OPENSSL_ALL) \

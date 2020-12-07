@@ -1,7 +1,7 @@
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x001FFE0
-    RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00010000
+    FLASH (rx) : ORIGIN = ##WOLFBOOT_ORIGIN##, LENGTH = ##WOLFBOOT_PARTITION_BOOT_ADDRESS##
+    RAM (rwx) : ORIGIN = 0x30000000, LENGTH = 0x00017FFF
 }
 
 SECTIONS
@@ -12,18 +12,24 @@ SECTIONS
         KEEP(*(.isr_vector))
         *(.text*)
         *(.rodata*)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _end_text = .;
+    } > FLASH 
+    .edidx :
+    {
+        . = ALIGN(4);
+        *(.ARM.exidx*)
     } > FLASH
+
 
     _stored_data = .;
     .data : AT (_stored_data)
     {
         _start_data = .;
         KEEP(*(.data*))
-        . = ALIGN(4);
+        . = ALIGN(8);
         KEEP(*(.ramcode))
-        . = ALIGN(4);
+        . = ALIGN(8);
         _end_data = .;
     } > RAM
 
@@ -33,12 +39,13 @@ SECTIONS
         __bss_start__ = .;
         *(.bss*)
         *(COMMON)
-        . = ALIGN(4);
+        . = ALIGN(8);
         _end_bss = .;
         __bss_end__ = .;
         _end = .;
     } > RAM
-    . = ALIGN(4);
+    . = ALIGN(8);
+
 }
 
 END_STACK = ORIGIN(RAM) + LENGTH(RAM);

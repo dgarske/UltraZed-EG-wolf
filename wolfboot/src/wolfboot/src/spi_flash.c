@@ -96,7 +96,6 @@ static void flash_write_enable(void)
 
 static void flash_write_disable(void)
 {
-    //uint8_t status;
     spi_cmd(WRDI);
 }
 
@@ -182,13 +181,12 @@ uint16_t spi_flash_probe(void)
     spi_write(0xFF);
     product = spi_read();
     spi_cs_off(SPI_CS_FLASH);
-    if (manuf == 0xBF)
+    if (manuf == 0xBF || manuf == 0xC2)
         chip_write_mode = SST_SINGLEBYTE;
     if (manuf == 0xEF)
         chip_write_mode = WB_WRITEPAGE;
 
 #ifndef READONLY
-    spi_cmd(EWSR);
     spi_cs_on(SPI_CS_FLASH);
     spi_write(WRSR);
     spi_read();
@@ -202,7 +200,6 @@ uint16_t spi_flash_probe(void)
 
 void spi_flash_sector_erase(uint32_t address)
 {
-    //uint8_t status;
     address &= (~(SPI_FLASH_SECTOR_SIZE - 1));
 
     wait_busy();

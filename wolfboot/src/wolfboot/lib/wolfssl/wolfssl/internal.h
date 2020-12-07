@@ -186,8 +186,15 @@
     /* do nothing */
 #else
     #ifndef SINGLE_THREADED
-        #define WOLFSSL_PTHREADS
-        #include <pthread.h>
+        #if defined(WOLFSSL_LINUXKM)
+            #define WOLFSSL_KTHREADS
+            #include <linux/kthread.h>
+        #elif defined(WOLFSSL_USER_MUTEX)
+            /* do nothing */
+        #else
+            #define WOLFSSL_PTHREADS
+            #include <pthread.h>
+        #endif
     #endif
     #if defined(OPENSSL_EXTRA) && !defined(NO_FILESYSTEM)
         #include <unistd.h>      /* for close of BIO */
@@ -1627,14 +1634,14 @@ WOLFSSL_LOCAL ProtocolVersion MakeTLSv1_3(void);
     WOLFSSL_LOCAL ProtocolVersion MakeDTLSv1_2(void);
 
     #ifdef WOLFSSL_SESSION_EXPORT
-    WOLFSSL_LOCAL int wolfSSL_dtls_import_internal(WOLFSSL* ssl, byte* buf,
+    WOLFSSL_LOCAL int wolfSSL_dtls_import_internal(WOLFSSL* ssl, const byte* buf,
                                                                      word32 sz);
     WOLFSSL_LOCAL int wolfSSL_dtls_export_internal(WOLFSSL* ssl, byte* buf,
                                                                      word32 sz);
     WOLFSSL_LOCAL int wolfSSL_dtls_export_state_internal(WOLFSSL* ssl,
                                                           byte* buf, word32 sz);
     WOLFSSL_LOCAL int wolfSSL_dtls_import_state_internal(WOLFSSL* ssl,
-                                                          byte* buf, word32 sz);
+                                                    const byte* buf, word32 sz);
     WOLFSSL_LOCAL int wolfSSL_send_session(WOLFSSL* ssl);
     #endif
 #endif
@@ -1991,18 +1998,22 @@ struct WOLFSSL_CERT_MANAGER {
 #ifndef NO_WOLFSSL_CM_VERIFY
     VerifyCallback  verifyCallback;      /* Verify callback */
 #endif
-    CallbackCACache caCacheCallback;     /* CA cache addition callback */
-    CbMissingCRL    cbMissingCRL;        /* notify through cb of missing crl */
-    CbOCSPIO        ocspIOCb;            /* I/O callback for OCSP lookup */
-    CbOCSPRespFree  ocspRespFreeCb;      /* Frees OCSP Response from IO Cb */
-    wolfSSL_Mutex   caLock;              /* CA list lock */
-    byte            crlEnabled;          /* is CRL on ? */
-    byte            crlCheckAll;         /* always leaf, but all ? */
-    byte            ocspEnabled;         /* is OCSP on ? */
-    byte            ocspCheckAll;        /* always leaf, but all ? */
-    byte            ocspSendNonce;       /* send the OCSP nonce ? */
-    byte            ocspUseOverrideURL;  /* ignore cert's responder, override */
-    byte            ocspStaplingEnabled; /* is OCSP Stapling on ? */
+    CallbackCACache caCacheCallback;       /* CA cache addition callback */
+    CbMissingCRL    cbMissingCRL;          /* notify thru cb of missing crl */
+    CbOCSPIO        ocspIOCb;              /* I/O callback for OCSP lookup */
+    CbOCSPRespFree  ocspRespFreeCb;        /* Frees OCSP Response from IO Cb */
+    wolfSSL_Mutex   caLock;                /* CA list lock */
+    byte            crlEnabled:1;          /* is CRL on ? */
+    byte            crlCheckAll:1;         /* always leaf, but all ? */
+    byte            ocspEnabled:1;         /* is OCSP on ? */
+    byte            ocspCheckAll:1;        /* always leaf, but all ? */
+    byte            ocspSendNonce:1;       /* send the OCSP nonce ? */
+    byte            ocspUseOverrideURL:1;  /* ignore cert responder, override */
+    byte            ocspStaplingEnabled:1; /* is OCSP Stapling on ? */
+#if !defined(NO_WOLFSSL_CLIENT) && (defined(HAVE_CERTIFICATE_STATUS_REQUEST) \
+                               ||  defined(HAVE_CERTIFICATE_STATUS_REQUEST_V2))
+    byte            ocspMustStaple:1;      /* server must respond with staple */
+#endif
 
 #ifndef NO_RSA
     short           minRsaKeySz;         /* minimum allowed RSA key size */
@@ -2022,8 +2033,7 @@ WOLFSSL_LOCAL int CM_VerifyBuffer_ex(WOLFSSL_CERT_MANAGER* cm, const byte* buff,
 
 
 #ifndef NO_CERTS
-#if !defined NOCERTS &&\
-    (!defined(NO_WOLFSSL_CLIENT) || !defined(WOLFSSL_NO_CLIENT_AUTH))
+#if !defined(NO_WOLFSSL_CLIENT) || !defined(WOLFSSL_NO_CLIENT_AUTH)
 typedef struct ProcPeerCertArgs {
     buffer*      certs;
 #ifdef WOLFSSL_TLS13
@@ -3658,7 +3668,7 @@ struct WOLFSSL_X509 {
     WOLFSSL_STACK* ext_sk; /* Store X509_EXTENSIONS from wolfSSL_X509_get_ext */
     WOLFSSL_STACK* ext_d2i;/* Store d2i extensions from wolfSSL_X509_get_ext_d2i */
 #endif /* WOLFSSL_QT || OPENSSL_ALL */
-#ifdef OPENSSL_EXTRA
+#if defined(OPENSSL_EXTRA) || defined(WOLFSSL_WPAS_SMALL)
     WOLFSSL_ASN1_INTEGER* serialNumber; /* Stores SN from wolfSSL_X509_get_serialNumber */
 #endif
     WOLFSSL_ASN1_TIME notBefore;
@@ -3725,6 +3735,7 @@ struct WOLFSSL_X509 {
     byte             subjAltNameCrit:1;
     byte             authKeyIdSet:1;
     byte             authKeyIdCrit:1;
+    byte             issuerSet:1;
 #endif /* OPENSSL_EXTRA || OPENSSL_EXTRA_X509_SMALL */
     byte             serial[EXTERNAL_SERIAL_SIZE];
     char             subjectCN[ASN_NAME_MAX];        /* common name short cut */
@@ -3737,7 +3748,11 @@ struct WOLFSSL_X509 {
     WOLFSSL_X509_ALGOR algor;
     WOLFSSL_X509_PUBKEY key;
 #endif
-    byte issuerSet:1;
+#if defined(OPENSSL_ALL) || defined(KEEP_OUR_CERT) || defined(KEEP_PEER_CERT) || \
+    defined(SESSION_CERTS)
+    byte            notBeforeData[CTC_DATE_SIZE];
+    byte            notAfterData[CTC_DATE_SIZE];
+#endif
 };
 
 
@@ -4161,6 +4176,8 @@ struct WOLFSSL {
 #endif /* HAVE_TLS_EXTENSIONS */
 #ifdef HAVE_OCSP
         void*       ocspIOCtx;
+        byte ocspProducedDate[MAX_DATE_SZ];
+        int ocspProducedDateFormat;
     #ifdef OPENSSL_EXTRA
         byte*       ocspResp;
         int         ocspRespSz;
@@ -4551,6 +4568,7 @@ WOLFSSL_LOCAL  int GrowInputBuffer(WOLFSSL* ssl, int size, int usedLength);
     WOLFSSL_LOCAL int DtlsUseSCRKeys(WOLFSSL* ssl);
     WOLFSSL_LOCAL int DtlsCheckOrder(WOLFSSL* ssl, int order);
 #endif
+    WOLFSSL_LOCAL int IsSCR(WOLFSSL* ssl);
 
     WOLFSSL_LOCAL void WriteSEQ(WOLFSSL* ssl, int verifyOrder, byte* out);
 

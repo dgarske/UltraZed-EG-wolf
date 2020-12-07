@@ -4563,14 +4563,14 @@ static int PKCS7_VerifySignedData(PKCS7* pkcs7, const byte* hashBuf,
 
                     if (ret == 0) {
                         idx += length;
-
-                        pkiMsg2   = pkiMsg;
-                        pkiMsg2Sz = pkiMsgSz;
-                    #ifndef NO_PKCS7_STREAM
-                        pkcs7->stream->varOne = pkiMsg2Sz;
-                        pkcs7->stream->flagOne = 1;
-                    #endif
                     }
+
+                    pkiMsg2   = pkiMsg;
+                    pkiMsg2Sz = pkiMsgSz;
+                #ifndef NO_PKCS7_STREAM
+                    pkcs7->stream->varOne = pkiMsg2Sz;
+                    pkcs7->stream->flagOne = 1;
+                #endif
                 }
             }
             else {
@@ -9239,6 +9239,7 @@ static int wc_PKCS7_DecryptKari(PKCS7* pkcs7, byte* in, word32 inSz,
     switch (pkcs7->state) {
         case WC_PKCS7_DECRYPT_KARI: {
             WC_PKCS7_KARI* kari;
+
         #ifndef NO_PKCS7_STREAM
             /* @TODO for now just get full buffer, needs divided up */
             if ((ret = wc_PKCS7_AddDataToStream(pkcs7, in, inSz,
@@ -11750,10 +11751,10 @@ int wc_PKCS7_EncodeEncryptedData(PKCS7* pkcs7, byte* output, word32 outputSz)
 
     if (totalSz > (int)outputSz) {
         WOLFSSL_MSG("PKCS#7 output buffer too small");
-        if (pkcs7->unprotectedAttribsSz != 0) {
+        if (attribs != NULL)
             XFREE(attribs, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
+        if (flatAttribs != NULL)
             XFREE(flatAttribs, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
-        }
         XFREE(encryptedContent, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
         XFREE(plain, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
         return BUFFER_E;
@@ -11789,10 +11790,12 @@ int wc_PKCS7_EncodeEncryptedData(PKCS7* pkcs7, byte* output, word32 outputSz)
         idx += attribsSetSz;
         XMEMCPY(output + idx, flatAttribs, attribsSz);
         idx += attribsSz;
-        XFREE(attribs, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
-        XFREE(flatAttribs, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
     }
 
+    if (attribs != NULL)
+        XFREE(attribs, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
+    if (flatAttribs != NULL)
+        XFREE(flatAttribs, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
     XFREE(encryptedContent, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
     XFREE(plain, pkcs7->heap, DYNAMIC_TYPE_PKCS7);
 
@@ -11853,7 +11856,7 @@ int wc_PKCS7_DecodeEncryptedData(PKCS7* pkcs7, byte* in, word32 inSz,
     byte *tmpIv = tmpIvBuf;
 
     int encryptedContentSz = 0;
-    byte padLen;
+    byte padLen = 0;
     byte* encryptedContent = NULL;
 
     byte* pkiMsg = in;

@@ -75,6 +75,10 @@
     #include <wolfssl/wolfcrypt/port/caam/wolfcaam.h>
 #endif
 
+#ifdef WOLFSSL_IMXRT_DCP
+    #include <wolfssl/wolfcrypt/port/nxp/dcp_port.h>
+#endif
+
 #ifdef WOLF_CRYPTO_CB
     #include <wolfssl/wolfcrypt/cryptocb.h>
 #endif
@@ -109,7 +113,6 @@ static volatile int initRefCount = 0;
 int wolfCrypt_Init(void)
 {
     int ret = 0;
-
     if (initRefCount == 0) {
         WOLFSSL_ENTER("wolfCrypt_Init");
 
@@ -264,6 +267,12 @@ int wolfCrypt_Init(void)
         }
 #endif
 
+#ifdef WOLFSSL_IMXRT_DCP
+        if ((ret = wc_dcp_init()) != 0) {
+            return ret;
+        }
+#endif
+
 #if defined(WOLFSSL_DSP) && !defined(WOLFSSL_DSP_BUILD)
 	if ((ret = wolfSSL_InitHandle()) != 0) {
             return ret;
@@ -356,7 +365,7 @@ int wc_FileLoad(const char* fname, unsigned char** buf, size_t* bufLen,
         return BAD_PATH_ERROR;
     }
 
-    XFSEEK(f, 0, SEEK_END);
+    XFSEEK(f, 0, XSEEK_END);
     fileSz = XFTELL(f);
     XREWIND(f);
     if (fileSz > 0) {
@@ -1048,6 +1057,35 @@ int wolfSSL_CryptHwMutexUnLock(void)
             return 0;
         else
             return BAD_MUTEX_E;
+    }
+
+#elif defined(WOLFSSL_KTHREADS)
+
+    /* Linux kernel mutex routines are voids, alas. */
+
+    int wc_InitMutex(wolfSSL_Mutex* m)
+    {
+        mutex_init(m);
+        return 0;
+    }
+
+    int wc_FreeMutex(wolfSSL_Mutex* m)
+    {
+        mutex_destroy(m);
+        return 0;
+    }
+
+    int wc_LockMutex(wolfSSL_Mutex* m)
+    {
+        mutex_lock(m);
+        return 0;
+    }
+
+
+    int wc_UnLockMutex(wolfSSL_Mutex* m)
+    {
+        mutex_unlock(m);
+        return 0;
     }
 
 #elif defined(WOLFSSL_VXWORKS)
@@ -2016,7 +2054,9 @@ struct tm* gmtime(const time_t* timer)
     }
 
     ret->tm_mday  = (int)++dayno;
+#ifndef WOLFSSL_LINUXKM
     ret->tm_isdst = 0;
+#endif
 
     return ret;
 }
@@ -2150,7 +2190,7 @@ time_t XTIME(time_t * timer)
 #if defined(WOLFSSL_XILINX)
 #include "xrtcpsu.h"
 
-time_t XTIME(time_t * timer)
+time_t xilinx_time(time_t * timer)
 {
     time_t sec = 0;
     XRtcPsu_Config* con;
@@ -2259,6 +2299,24 @@ time_t wiced_pseudo_unix_epoch_time(time_t * timer)
     }
     #endif /* !NO_CRYPT_BENCHMARK */
 #endif /* WOLFSSL_TELIT_M2MB */
+
+
+#if defined(WOLFSSL_LINUXKM)
+time_t time(time_t * timer)
+{
+    time_t ret;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+    struct timespec ts;
+    getnstimeofday(&ts);
+    ret = ts.tv_sec * 1000000000LL + ts.tv_nsec;
+#else
+    ret = ktime_get_real_seconds();
+#endif
+    if (timer)
+        *timer = ret;
+    return ret;
+}
+#endif /* WOLFSSL_LINUXKM */
 
 #endif /* !NO_ASN_TIME */
 

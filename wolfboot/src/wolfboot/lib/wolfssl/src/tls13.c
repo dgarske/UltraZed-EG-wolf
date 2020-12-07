@@ -739,13 +739,20 @@ static const byte resumeMasterLabel[RESUME_MASTER_LABEL_SZ + 1] =
  */
 int DeriveResumptionSecret(WOLFSSL* ssl, byte* key)
 {
+    byte* masterSecret;
+
     WOLFSSL_MSG("Derive Resumption Secret");
-    if (ssl == NULL || ssl->arrays == NULL) {
+    if (ssl == NULL) {
         return BAD_FUNC_ARG;
     }
-    return DeriveKey(ssl, key, -1, ssl->arrays->masterSecret,
-                     resumeMasterLabel, RESUME_MASTER_LABEL_SZ,
-                     ssl->specs.mac_algorithm, 1);
+    if (ssl->arrays != NULL) {
+        masterSecret = ssl->arrays->masterSecret;
+    }
+    else {
+        masterSecret = ssl->session.masterSecret;
+    }
+    return DeriveKey(ssl, key, -1, masterSecret, resumeMasterLabel,
+                     RESUME_MASTER_LABEL_SZ, ssl->specs.mac_algorithm, 1);
 }
 #endif
 
@@ -1338,6 +1345,21 @@ end:
     word32 TimeNowInMilliseconds(void)
     {
         return (word32)(uTaskerSystemTick / (TICK_RESOLUTION / 1000));
+    }
+#elif defined(WOLFSSL_LINUXKM)
+    /* The time in milliseconds.
+     * Used for tickets to represent difference between when first seen and when
+     * sending.
+     *
+     * returns the time in milliseconds as a 32-bit value.
+     */
+    word32 TimeNowInMilliseconds(void)
+    {
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
+        return (word32)(ktime_get_real_ns() / (s64)1000000);
+    #else
+        return (word32)(ktime_get_real_ns() / (ktime_t)1000000);
+    #endif
     }
 #else
     /* The time in milliseconds.
@@ -3347,7 +3369,8 @@ static int DoPreSharedKeys(WOLFSSL* ssl, const byte* input, word32 helloSz,
                                      diff - MAX_TICKET_AGE_SECS * 1000 > 1000) {
                 /* Invalid difference, fallback to full handshake. */
                 ssl->options.resuming = 0;
-                break;
+                /* Hash the rest of the ClientHello. */
+                return HashRaw(ssl, input + helloSz - bindersLen, bindersLen);
             }
 
             /* Check whether resumption is possible based on suites in SSL and
@@ -5047,8 +5070,9 @@ static int SendTls13Certificate(WOLFSSL* ssl)
     return ret;
 }
 
-#if !defined(NO_RSA) || defined(HAVE_ECC) || defined(HAVE_ED25519) || \
-     defined(HAVE_ED448)
+#if (!defined(NO_RSA) || defined(HAVE_ECC) || defined(HAVE_ED25519) || \
+     defined(HAVE_ED448)) && \
+    (!defined(NO_WOLFSSL_SERVER) || !defined(WOLFSSL_NO_CLIENT_AUTH))
 typedef struct Scv13Args {
     byte*  output; /* not allocated */
     byte*  verify; /* not allocated */
@@ -5435,6 +5459,7 @@ exit_scv:
 }
 #endif
 
+#if !defined(NO_WOLFSSL_CLIENT) || !defined(WOLFSSL_NO_CLIENT_AUTH)
 /* handle processing TLS v1.3 certificate (11) */
 /* Parse and handle a TLS v1.3 Certificate message.
  *
@@ -5475,6 +5500,7 @@ static int DoTls13Certificate(WOLFSSL* ssl, byte* input, word32* inOutIdx,
 
     return ret;
 }
+#endif
 
 #if !defined(NO_RSA) || defined(HAVE_ECC) || defined(HAVE_ED25519) || \
                                                              defined(HAVE_ED448)
@@ -7028,7 +7054,7 @@ int DoTls13HandShakeMsgType(WOLFSSL* ssl, byte* input, word32* inOutIdx,
 
     if (ssl->options.handShakeState == HANDSHAKE_DONE &&
             type != session_ticket && type != certificate_request &&
-            type != certificate && type != key_update) {
+            type != certificate && type != key_update && type != finished) {
         WOLFSSL_MSG("HandShake message after handshake complete");
         SendAlert(ssl, alert_fatal, unexpected_message);
         return OUT_OF_ORDER_E;
@@ -7104,7 +7130,8 @@ int DoTls13HandShakeMsgType(WOLFSSL* ssl, byte* input, word32* inOutIdx,
 #endif /* !NO_WOLFSSL_SERVER */
 
     /* Messages received by both client and server. */
-#ifndef NO_CERTS
+#if !defined(NO_CERTS) && (!defined(NO_WOLFSSL_CLIENT) || \
+                           !defined(WOLFSSL_NO_CLIENT_AUTH))
     case certificate:
         WOLFSSL_MSG("processing certificate");
         ret = DoTls13Certificate(ssl, input, inOutIdx, size);
@@ -7529,8 +7556,9 @@ int wolfSSL_connect_TLSv13(WOLFSSL* ssl)
             FALL_THROUGH;
 
         case FIRST_REPLY_THIRD:
-        #if !defined(NO_CERTS) && (!defined(NO_RSA) || defined(HAVE_ECC) || \
-             defined(HAVE_ED25519) || defined(HAVE_ED448))
+        #if (!defined(NO_CERTS) && (!defined(NO_RSA) || defined(HAVE_ECC) || \
+             defined(HAVE_ED25519) || defined(HAVE_ED448))) && \
+             (!defined(NO_WOLFSSL_SERVER) || !defined(WOLFSSL_NO_CLIENT_AUTH))
             if (!ssl->options.resuming && ssl->options.sendVerify) {
                 ssl->error = SendTls13CertificateVerify(ssl);
                 if (ssl->error != 0) {

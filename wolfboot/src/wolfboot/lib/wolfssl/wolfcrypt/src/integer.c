@@ -546,6 +546,14 @@ void mp_exch (mp_int * a, mp_int * b)
   *b = t;
 }
 
+int mp_cond_swap_ct (mp_int * a, mp_int * b, int c, int m)
+{
+    (void)c;
+    if (m == 1)
+        mp_exch(a, b);
+    return MP_OKAY;
+}
+
 
 /* shift right a certain number of bits */
 void mp_rshb (mp_int *c, int x)
@@ -2261,13 +2269,15 @@ int mp_exptmod_base_2(mp_int * X, mp_int * P, mp_int * Y)
      redux = fast_mp_montgomery_reduce;
   } else
 #endif
-  {
 #ifdef BN_MP_MONTGOMERY_REDUCE_C
+  {
      /* use slower baseline Montgomery method */
      redux = mp_montgomery_reduce;
-#else
-     return MP_VAL;
+  }
 #endif
+
+  if (redux == NULL) {
+      return MP_VAL;
   }
 
 #ifdef WOLFSSL_SMALL_STACK
@@ -4560,7 +4570,13 @@ static int mp_div_d (mp_int * a, mp_digit b, mp_int * c, mp_digit * d)
      w = (w << ((mp_word)DIGIT_BIT)) | ((mp_word)a->dp[ix]);
 
      if (w >= b) {
+#ifdef WOLFSSL_LINUXKM
+        t = (mp_digit)w;
+	/* Linux kernel macro for in-place 64 bit integer division. */
+        do_div(t, b);
+#else
         t = (mp_digit)(w / b);
+#endif
         w -= ((mp_word)t) * ((mp_word)b);
       } else {
         t = 0;
@@ -5244,11 +5260,6 @@ int mp_radix_size (mp_int *a, int radix, int *size)
     /* digs is the digit count */
     digs = 0;
 
-    /* if it's negative add one for the sign */
-    if (a->sign == MP_NEG) {
-        ++digs;
-    }
-
     /* init a copy of the input */
     if ((res = mp_init_copy (&t, a)) != MP_OKAY) {
         return res;
@@ -5266,6 +5277,18 @@ int mp_radix_size (mp_int *a, int radix, int *size)
         ++digs;
     }
     mp_clear (&t);
+
+#ifndef WC_DISABLE_RADIX_ZERO_PAD
+    /* For hexadecimal output, add zero padding when number of digits is odd */
+    if ((digs & 1) && (radix == 16)) {
+        ++digs;
+    }
+#endif
+
+    /* if it's negative add one for the sign */
+    if (a->sign == MP_NEG) {
+        ++digs;
+    }
 
     /* return digs + 1, the 1 is for the NULL byte that would be required. */
     *size = digs + 1;
