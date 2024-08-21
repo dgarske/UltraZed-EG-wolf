@@ -1,0 +1,60 @@
+diff --git a/Makefile b/Makefile
+index f90a63f1..12140f1a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -159,7 +159,7 @@ keytools_check: keytools FORCE
+ 
+ $(PRIVATE_KEY):
+ 	$(Q)$(MAKE) keytools_check
+-	$(Q)(test $(SIGN) = NONE) || ($(KEYGEN_TOOL) $(KEYGEN_OPTIONS) -g $(PRIVATE_KEY)) || true
++	$(Q)(test $(SIGN) = NONE) || ("$(KEYGEN_TOOL)" $(KEYGEN_OPTIONS) -g $(PRIVATE_KEY)) || true
+ 	$(Q)(test $(SIGN) = NONE) && (echo "// SIGN=NONE" >  src/keystore.c) || true
+ 
+ keytools:
+@@ -174,8 +174,8 @@ tpmtools:
+ 
+ test-app/image_v1_signed.bin: $(BOOT_IMG)
+ 	@echo "\t[SIGN] $(BOOT_IMG)"
+-	$(Q)(test $(SIGN) = NONE) || $(SIGN_TOOL) $(SIGN_OPTIONS) $(BOOT_IMG) $(PRIVATE_KEY) 1
+-	$(Q)(test $(SIGN) = NONE) && $(SIGN_TOOL) $(SIGN_OPTIONS) $(BOOT_IMG) 1 || true
++	$(Q)(test $(SIGN) = NONE) || "$(SIGN_TOOL)" $(SIGN_OPTIONS) $(BOOT_IMG) $(PRIVATE_KEY) 1
++	$(Q)(test $(SIGN) = NONE) && "$(SIGN_TOOL)" $(SIGN_OPTIONS) $(BOOT_IMG) 1 || true
+ 
+ test-app/image.elf: wolfboot.elf
+ 	$(Q)$(MAKE) -C test-app WOLFBOOT_ROOT="$(WOLFBOOT_ROOT)" image.elf
+diff --git a/docs/Signing.md b/docs/Signing.md
+index 2a620290..ba279681 100644
+--- a/docs/Signing.md
++++ b/docs/Signing.md
+@@ -24,6 +24,8 @@ If the C version of the key tools exists they will be used by wolfBoot's makefil
+ 
+ Use the `wolfBootSignTool.vcxproj` Visual Studio project to build the `sign.exe` and `keygen.exe` tools for use on Windows.
+ 
++If you see any error about missing `target.h` this is a generated file based on your .config using the make process. It is needed for `WOLFBOOT_SECTOR_SIZE` used in delta updates.
++
+ ### Python key tools
+ 
+ **Please note that the Python tools are deprecated and will be removed in future versions.**
+diff --git a/tools/keytools/sign.c b/tools/keytools/sign.c
+index 1df725ec..80c8b82d 100644
+--- a/tools/keytools/sign.c
++++ b/tools/keytools/sign.c
+@@ -37,6 +37,9 @@
+ #include <sys/types.h>
+ #include <fcntl.h>
+ #include <stddef.h>
++/* target.h is a generated file based on .config (see target.h.in)
++ * Provides: WOLFBOOT_SECTOR_SIZE */
++#include <target.h>
+ #include <delta.h>
+ 
+ #include "wolfboot/version.h"
+@@ -1393,7 +1396,7 @@ static int base_diff(const char *f_base, uint8_t *pubkey, uint32_t pubkey_sz, in
+         goto cleanup;
+     }
+     fseek(f3, MAX_SRC_SIZE -1, SEEK_SET);
+-    io_sz = fwrite(&ff, 1, 1, f3);
++    io_sz = (int)fwrite(&ff, 1, 1, f3);
+     if (io_sz != 1) {
+         goto cleanup;
+     }

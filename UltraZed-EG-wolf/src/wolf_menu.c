@@ -46,7 +46,7 @@
 #include "tls_server.h"
 #include "cert_verify.h"
 int echo_application(void);
-int network_ready; /* global variable in networking.c */
+extern int network_ready; /* global variable in networking.c */
 
 #define THREAD_STACKSIZE (32*1024)
 

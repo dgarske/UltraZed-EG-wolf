@@ -3,9 +3,9 @@
     	
     <storageModule moduleId="org.eclipse.cdt.core.settings">
         		
-        <cconfiguration id="xilinx.gnu.arm.a53.exe.debug.104647700">
+        <cconfiguration id="xilinx.gnu.arm.a53.exe.debug.148599057">
             			
-            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="xilinx.gnu.arm.a53.exe.debug.104647700" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="xilinx.gnu.arm.a53.exe.debug.148599057" moduleId="org.eclipse.cdt.core.settings" name="Debug">
                 				
                 <externalSettings/>
                 				
@@ -29,57 +29,53 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="xilinx.gnu.arm.a53.exe.debug.104647700" name="Debug" parent="xilinx.gnu.arm.a53.exe.debug">
+                <configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="xilinx.gnu.arm.a53.exe.debug.148599057" name="Debug" parent="xilinx.gnu.arm.a53.exe.debug">
                     					
-                    <folderInfo id="xilinx.gnu.arm.a53.exe.debug.104647700." name="/" resourcePath="">
+                    <folderInfo id="xilinx.gnu.arm.a53.exe.debug.148599057." name="/" resourcePath="">
                         						
-                        <toolChain id="xilinx.gnu.arm.a53.exe.debug.toolchain.1721078052" name="Xilinx ARM v8 GNU Toolchain" superClass="xilinx.gnu.arm.a53.exe.debug.toolchain">
+                        <toolChain id="xilinx.gnu.arm.a53.exe.debug.toolchain.739295961" name="Xilinx ARM v8 GNU Toolchain" superClass="xilinx.gnu.arm.a53.exe.debug.toolchain">
                             							
-                            <targetPlatform binaryParser="com.xilinx.sdk.managedbuilder.XELF.arm.a53" id="xilinx.arm.a53.target.gnu.base.debug.576290456" isAbstract="false" name="Debug Platform" superClass="xilinx.arm.a53.target.gnu.base.debug"/>
+                            <targetPlatform binaryParser="com.xilinx.sdk.managedbuilder.XELF.arm.a53" id="xilinx.arm.a53.target.gnu.base.debug.1894260915" isAbstract="false" name="Debug Platform" superClass="xilinx.arm.a53.target.gnu.base.debug"/>
                             							
-                            <builder buildPath="${workspace_loc:/wolfboot}/Debug" enableAutoBuild="false" id="xilinx.gnu.arm.a53.toolchain.builder.debug.855586605" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU make" parallelBuildOn="true" parallelizationNumber="optimal" superClass="xilinx.gnu.arm.a53.toolchain.builder.debug"/>
+                            <builder buildPath="${workspace_loc:/wolfboot}/Debug" enableAutoBuild="true" id="xilinx.gnu.arm.a53.toolchain.builder.debug.1338182804" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU make" parallelBuildOn="true" parallelizationNumber="optimal" superClass="xilinx.gnu.arm.a53.toolchain.builder.debug"/>
                             							
-                            <tool id="xilinx.gnu.arm.a53.c.toolchain.assembler.debug.1251140084" name="ARM v8 gcc assembler" superClass="xilinx.gnu.arm.a53.c.toolchain.assembler.debug">
+                            <tool id="xilinx.gnu.arm.a53.c.toolchain.assembler.debug.998235863" name="ARM v8 gcc assembler" superClass="xilinx.gnu.arm.a53.c.toolchain.assembler.debug">
                                 								
-                                <inputType id="xilinx.gnu.assembler.input.1831226635" superClass="xilinx.gnu.assembler.input"/>
+                                <inputType id="xilinx.gnu.assembler.input.2137696549" superClass="xilinx.gnu.assembler.input"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.c.toolchain.compiler.debug.347251587" name="ARM v8 gcc compiler" superClass="xilinx.gnu.arm.a53.c.toolchain.compiler.debug">
+                            <tool id="xilinx.gnu.arm.a53.c.toolchain.compiler.debug.1919096360" name="ARM v8 gcc compiler" superClass="xilinx.gnu.arm.a53.c.toolchain.compiler.debug">
                                 								
-                                <option defaultValue="gnu.c.optimization.level.none" id="xilinx.gnu.compiler.option.optimization.level.1267542734" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
+                                <option defaultValue="gnu.c.optimization.level.none" id="xilinx.gnu.compiler.option.optimization.level.2122044282" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.option.debugging.level.1414124271" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+                                <option id="xilinx.gnu.compiler.option.debugging.level.1569098529" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.574994895" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1428404278" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" useByScannerDiscovery="false" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspInclude}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.378543925" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
-                                								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.1365544827" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfTPM}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfssl}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/include}&quot;"/>
-                                    								
-                                </option>
-                                								
-                                <option id="xilinx.gnu.compiler.symbols.defined.605203976" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" useByScannerDiscovery="false" valueType="definedSymbols">
+                                <option id="xilinx.gnu.compiler.symbols.defined.18443229" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" useByScannerDiscovery="false" valueType="definedSymbols">
                                     									
                                     <listOptionValue builtIn="false" value="USE_BUILTIN_STARTUP"/>
                                     									
-                                    <listOptionValue builtIn="false" value="DEBUG_ZYNQ"/>
+                                    <listOptionValue builtIn="false" value="ZCU102"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="DEBUG_ZYNQ=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="DEBUG=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="__WOLFBOOT"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="TARGET_zynq"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="MMU"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="NO_XIP"/>
                                     									
                                     <listOptionValue builtIn="false" value="PART_UPDATE_EXT=1"/>
                                     									
@@ -93,61 +89,74 @@
                                     									
                                     <listOptionValue builtIn="false" value="WOLFBOOT_HASH_SHA3_384"/>
                                     									
-                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
                                     									
                                     <listOptionValue builtIn="false" value="ARCH_FLASH_OFFSET=0x00"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="MMU"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
                                     									
                                     <listOptionValue builtIn="false" value="XMALLOC_USER"/>
                                     									
                                     <listOptionValue builtIn="false" value="WOLFSSL_USER_SETTINGS"/>
                                     									
-                                    <listOptionValue builtIn="false" value="PLATFORM_zynq"/>
+                                    <listOptionValue builtIn="false" value="WOLFTPM_USER_SETTINGS"/>
                                     									
-                                    <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
+                                    <listOptionValue builtIn="false" value="WOLFPKCS11_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_DUALBOOT"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_ELF"/>
                                     								
                                 </option>
                                 								
-                                <inputType id="xilinx.gnu.arm.a53.c.compiler.input.2101454273" name="C source files" superClass="xilinx.gnu.arm.a53.c.compiler.input"/>
+                                <option id="xilinx.gnu.compiler.dircategory.includes.398847842" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" useByScannerDiscovery="false" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfssl}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfPKCS11}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfTPM}&quot;"/>
+                                    								
+                                </option>
+                                								
+                                <inputType id="xilinx.gnu.arm.a53.c.compiler.input.68805176" name="C source files" superClass="xilinx.gnu.arm.a53.c.compiler.input"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.compiler.debug.1010014288" name="ARM v8 g++ compiler" superClass="xilinx.gnu.arm.a53.cxx.toolchain.compiler.debug">
+                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.compiler.debug.156596863" name="ARM v8 g++ compiler" superClass="xilinx.gnu.arm.a53.cxx.toolchain.compiler.debug">
                                 								
-                                <option defaultValue="gnu.c.optimization.level.none" id="xilinx.gnu.compiler.option.optimization.level.1325566046" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
+                                <option defaultValue="gnu.c.optimization.level.none" id="xilinx.gnu.compiler.option.optimization.level.190000377" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.option.debugging.level.1780309420" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+                                <option id="xilinx.gnu.compiler.option.debugging.level.1833058226" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.611375877" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.732778339" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspInclude}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.486236583" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
-                                								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.1651847042" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfTPM}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfssl}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/include}&quot;"/>
-                                    								
-                                </option>
-                                								
-                                <option id="xilinx.gnu.compiler.symbols.defined.350370247" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" valueType="definedSymbols">
+                                <option id="xilinx.gnu.compiler.symbols.defined.1295574527" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" valueType="definedSymbols">
                                     									
                                     <listOptionValue builtIn="false" value="USE_BUILTIN_STARTUP"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ZCU102"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="DEBUG_ZYNQ=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="DEBUG=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="__WOLFBOOT"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="TARGET_zynq"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="MMU"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="NO_XIP"/>
                                     									
                                     <listOptionValue builtIn="false" value="PART_UPDATE_EXT=1"/>
                                     									
@@ -161,51 +170,60 @@
                                     									
                                     <listOptionValue builtIn="false" value="WOLFBOOT_HASH_SHA3_384"/>
                                     									
-                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
                                     									
                                     <listOptionValue builtIn="false" value="ARCH_FLASH_OFFSET=0x00"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="MMU"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
                                     									
                                     <listOptionValue builtIn="false" value="XMALLOC_USER"/>
                                     									
                                     <listOptionValue builtIn="false" value="WOLFSSL_USER_SETTINGS"/>
                                     									
-                                    <listOptionValue builtIn="false" value="PLATFORM_zynq"/>
+                                    <listOptionValue builtIn="false" value="WOLFTPM_USER_SETTINGS"/>
                                     									
-                                    <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
+                                    <listOptionValue builtIn="false" value="WOLFPKCS11_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_DUALBOOT"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_ELF"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.compiler.dircategory.includes.1725565215" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfssl}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfPKCS11}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfTPM}&quot;"/>
                                     								
                                 </option>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.toolchain.archiver.1697602921" name="ARM v8 archiver" superClass="xilinx.gnu.arm.a53.toolchain.archiver"/>
+                            <tool id="xilinx.gnu.arm.a53.toolchain.archiver.159566081" name="ARM v8 archiver" superClass="xilinx.gnu.arm.a53.toolchain.archiver"/>
                             							
-                            <tool id="xilinx.gnu.arm.a53.c.toolchain.linker.debug.1890395224" name="ARM v8 gcc linker" superClass="xilinx.gnu.arm.a53.c.toolchain.linker.debug">
+                            <tool id="xilinx.gnu.arm.a53.c.toolchain.linker.debug.1480085394" name="ARM v8 gcc linker" superClass="xilinx.gnu.arm.a53.c.toolchain.linker.debug">
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.2132504145" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1205655449" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" useByScannerDiscovery="false" valueType="libPaths">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspLib}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.1926017678" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.2145061967" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" useByScannerDiscovery="false" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilpm,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.linker.option.lscript.1192755206" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../src/lscript.ld" valueType="string"/>
+                                <option id="xilinx.gnu.c.linker.option.lscript.1793679540" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" useByScannerDiscovery="false" value="../hal/zynq.ld" valueType="string"/>
                                 								
-                                <inputType id="xilinx.gnu.linker.input.2129918356" superClass="xilinx.gnu.linker.input">
+                                <inputType id="xilinx.gnu.linker.input.704488260" superClass="xilinx.gnu.linker.input">
                                     									
                                     <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
                                     									
@@ -213,49 +231,37 @@
                                     								
                                 </inputType>
                                 								
-                                <inputType id="xilinx.gnu.linker.input.lscript.1540944486" name="Linker Script" superClass="xilinx.gnu.linker.input.lscript"/>
+                                <inputType id="xilinx.gnu.linker.input.lscript.791213663" name="Linker Script" superClass="xilinx.gnu.linker.input.lscript"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.linker.debug.2105678207" name="ARM v8 g++ linker" superClass="xilinx.gnu.arm.a53.cxx.toolchain.linker.debug">
+                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.linker.debug.1440309997" name="ARM v8 g++ linker" superClass="xilinx.gnu.arm.a53.cxx.toolchain.linker.debug">
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.307967540" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1309525220" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspLib}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.83990429" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.2020295032" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilpm,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.linker.option.lscript.2058767111" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../src/lscript.ld" valueType="string"/>
+                                <option id="xilinx.gnu.c.linker.option.lscript.379696488" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../hal/zynq.ld" valueType="string"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.size.debug.1462299015" name="ARM v8 Print Size" superClass="xilinx.gnu.arm.a53.size.debug"/>
+                            <tool id="xilinx.gnu.arm.a53.size.debug.1411644006" name="ARM v8 Print Size" superClass="xilinx.gnu.arm.a53.size.debug"/>
                             						
                         </toolChain>
                         					
                     </folderInfo>
                     					
-                    <fileInfo id="xilinx.gnu.arm.a53.exe.debug.104647700.1801334043" name="spi_drv_stm32.h" rcbsApplicability="disable" resourcePath="src/wolfboot/hal/spi/spi_drv_stm32.h" toolsToInvoke=""/>
-                    					
-                    <fileInfo id="xilinx.gnu.arm.a53.exe.debug.104647700.581374918" name="spi_drv_zynq.h" rcbsApplicability="disable" resourcePath="src/wolfboot/hal/spi/spi_drv_zynq.h" toolsToInvoke=""/>
-                    					
-                    <fileInfo id="xilinx.gnu.arm.a53.exe.debug.104647700.290640939" name="spi_drv_nrf52.h" rcbsApplicability="disable" resourcePath="src/wolfboot/hal/spi/spi_drv_nrf52.h" toolsToInvoke=""/>
-                    					
                     <sourceEntries>
                         						
-                        <entry excluding="src/wolfboot/hal/stm32l5.c|src/wolfboot/hal/stm32l5_ns.c|src/wolfboot/lib/wolfTPM/examples|src/wolfboot/lib/wolfTPM/tests|src/wolfboot/lib/wolfTPM/IDE|src/wolfboot/lib/wolfssl/tests|src/wolfboot/lib/wolfssl/tirtos|src/wolfboot/lib/wolfssl/swig|src/wolfboot/lib/wolfssl/mqx|src/wolfboot/lib/wolfssl/mplabx|src/wolfboot/lib/wolfssl/IPP|src/wolfboot/lib/wolfssl/mcapi|src/wolfboot/lib/wolfssl/testsuite|src/wolfboot/lib/wolfssl/examples|src/wolfboot/lib/wolfssl/IDE|src/wolfboot/lib/wolfssl/wolfcrypt/user-crypto|src/wolfboot/lib/wolfssl/wolfcrypt/src/sp_x86_64_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/sha512_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/sha256_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/poly1305_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/fe_x25519_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/chacha_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/aes_gcm_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/aes_asm.S|src/wolfboot/src/vector_riscv.S|src/wolfboot/src/update_flash_hwswap.c|src/wolfboot/src/update_flash.c|src/wolfboot/src/boot_riscv.c|src/wolfboot/src/boot_arm.c|src/wolfboot/hal/stm32wb.c|src/wolfboot/hal/stm32l0.c|src/wolfboot/hal/stm32h7.c|src/wolfboot/hal/stm32g0.c|src/wolfboot/hal/stm32f7.c|src/wolfboot/hal/stm32f4.c|src/wolfboot/hal/skeleton.c|src/wolfboot/hal/samr21.c|src/wolfboot/hal/raspi3.c|src/wolfboot/hal/psoc6.c|src/wolfboot/hal/nrf52.c|src/wolfboot/hal/lpc.c|src/wolfboot/hal/kinetis.c|src/wolfboot/hal/hifive1.c|src/wolfboot/hal/cc26x2.c|src/wolfboot/hal/uart/uart_drv_stm32wb.c|src/wolfboot/hal/uart/uart_drv_stm32f4.c|src/wolfboot/hal/uart/uart_drv_lpc.c|src/wolfboot/hal/spi/spi_drv_stm32.h|src/wolfboot/hal/spi/spi_drv_stm32.c|src/wolfboot/hal/spi/spi_drv_nrf52.h|src/wolfboot/hal/spi/spi_drv_nrf52.c|src/wolfboot/IDE/IAR|src/wolfboot/test-app|src/wolfboot/tools|_ide|src/wolfboot/.git" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+                        <entry excluding="src/qspi_flash.c|IDE/AURIX|IDE/CCS|IDE/MPLAB|IDE/Renesas|.git|IDE/IAR|test-app|tools|lib/wolfPKCS11|lib/wolfTPM|lib/wolfssl/linuxkm|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-aes-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-curve25519.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-sha256-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-sha3-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-sha512-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-curve25519.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-sha3-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-sha512-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-aes-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-curve25519.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-sha256-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-sha3-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-sha512-asm.S|lib/wolfssl/wolfcrypt/src/port/autosar|lib/wolfssl/wrapper|lib/wolfssl/zephyr|src/boot_x86_fsp.c|src/boot_x86_fsp_start.S|src/boot_x86_fsp_payload.c|src/boot_x86_64.c|src/boot_renesas.c|src/boot_renesas_start.S|src/boot_ppc_start.S|src/boot_ppc_mp.S|src/boot_ppc.c|src/x86|lib/wolfTPM/examples|lib/wolfTPM/tests|lib/wolfTPM/IDE|lib/wolfssl/tests|lib/wolfssl/tirtos|lib/wolfssl/swig|lib/wolfssl/mqx|lib/wolfssl/mplabx|lib/wolfssl/IPP|lib/wolfssl/mcapi|lib/wolfssl/testsuite|lib/wolfssl/examples|lib/wolfssl/IDE|lib/wolfssl/wolfcrypt/user-crypto|lib/wolfssl/wolfcrypt/src/aes_asm.S|lib/wolfssl/wolfcrypt/src/aes_gcm_asm.S|lib/wolfssl/wolfcrypt/src/aes_gcm_x86_asm.S|lib/wolfssl/wolfcrypt/src/aes_xts_asm.S|lib/wolfssl/wolfcrypt/src/chacha_asm.S|lib/wolfssl/wolfcrypt/src/fe_x25519_asm.S|lib/wolfssl/wolfcrypt/src/poly1305_asm.S|lib/wolfssl/wolfcrypt/src/sha256_asm.S|lib/wolfssl/wolfcrypt/src/sha3_asm.S|lib/wolfssl/wolfcrypt/src/sha512_asm.S|lib/wolfssl/wolfcrypt/src/sm3_asm.S|lib/wolfssl/wolfcrypt/src/sp_sm2_x86_64_asm.S|lib/wolfssl/wolfcrypt/src/sp_x86_64_asm.S|lib/wolfssl/wolfcrypt/src/wc_kyber_asm.S|src/vector_riscv.S|src/update_flash_hwswap.c|src/update_flash.c|src/boot_riscv.c|src/boot_arm.c|hal/aurix_tc3xx.c|hal/cc26x2.c|hal/hifive1.c|hal/imx_rt.c|hal/kinetis.c|hal/kontron_vx3060_s2.c|hal/kontron_vx3060_s2_loader.c|hal/library.c|hal/lpc.c|hal/mcxa.c|hal/nrf52.c|hal/nxp_p1021.c|hal/nxp_ppc.c|hal/nxp_t1024.c|hal/nxp_t2080.c|hal/psoc6.c|hal/raspi3.c|hal/renesas-ra.c|hal/renesas-rx.c|hal/renesas-rz.c|hal/rx65n.c|hal/rx72n.c|hal/same51.c|hal/samr21.c|hal/sim.c|hal/skeleton.c|hal/stm32c0.c|hal/stm32f4.c|hal/stm32f7.c|hal/stm32g0.c|hal/stm32h5.c|hal/stm32h7.c|hal/stm32l0.c|hal/stm32l4.c|hal/stm32l5.c|hal/stm32_tz.c|hal/stm32u5.c|hal/stm32wb.c|hal/ti_hercules.c|hal/x86_64_efi.c|hal/x86_fsp_qemu.c|hal/x86_fsp_qemu_loader.c|hal/x86_fsp_tgl.c|hal/x86_uart.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
                         					
                     </sourceEntries>
                     				
@@ -267,9 +273,9 @@
             		
         </cconfiguration>
         		
-        <cconfiguration id="xilinx.gnu.arm.a53.exe.release.1314953955">
+        <cconfiguration id="xilinx.gnu.arm.a53.exe.release.85633169">
             			
-            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="xilinx.gnu.arm.a53.exe.release.1314953955" moduleId="org.eclipse.cdt.core.settings" name="Release">
+            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="xilinx.gnu.arm.a53.exe.release.85633169" moduleId="org.eclipse.cdt.core.settings" name="Release">
                 				
                 <externalSettings/>
                 				
@@ -293,122 +299,54 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="xilinx.gnu.arm.a53.exe.release.1314953955" name="Release" parent="xilinx.gnu.arm.a53.exe.release">
+                <configuration artifactExtension="elf" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="xilinx.gnu.arm.a53.exe.release.85633169" name="Release" parent="xilinx.gnu.arm.a53.exe.release">
                     					
-                    <folderInfo id="xilinx.gnu.arm.a53.exe.release.1314953955." name="/" resourcePath="">
+                    <folderInfo id="xilinx.gnu.arm.a53.exe.release.85633169." name="/" resourcePath="">
                         						
-                        <toolChain id="xilinx.gnu.arm.a53.exe.release.toolchain.1221499731" name="Xilinx ARM v8 GNU Toolchain" superClass="xilinx.gnu.arm.a53.exe.release.toolchain">
+                        <toolChain id="xilinx.gnu.arm.a53.exe.release.toolchain.2107371204" name="Xilinx ARM v8 GNU Toolchain" superClass="xilinx.gnu.arm.a53.exe.release.toolchain">
                             							
-                            <targetPlatform binaryParser="com.xilinx.sdk.managedbuilder.XELF.arm.a53" id="xilinx.arm.a53.target.gnu.base.release.1907003094" isAbstract="false" name="Release Platform" superClass="xilinx.arm.a53.target.gnu.base.release"/>
+                            <targetPlatform binaryParser="com.xilinx.sdk.managedbuilder.XELF.arm.a53" id="xilinx.arm.a53.target.gnu.base.release.1273922008" isAbstract="false" name="Release Platform" superClass="xilinx.arm.a53.target.gnu.base.release"/>
                             							
-                            <builder buildPath="${workspace_loc:/wolfboot}/Release" enableAutoBuild="false" id="xilinx.gnu.arm.a53.toolchain.builder.release.2074162094" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU make" parallelBuildOn="true" parallelizationNumber="optimal" superClass="xilinx.gnu.arm.a53.toolchain.builder.release"/>
+                            <builder buildPath="${workspace_loc:/wolfboot}/Release" enableAutoBuild="true" id="xilinx.gnu.arm.a53.toolchain.builder.release.1327205820" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="GNU make" superClass="xilinx.gnu.arm.a53.toolchain.builder.release"/>
                             							
-                            <tool id="xilinx.gnu.arm.a53.c.toolchain.assembler.release.2119127219" name="ARM v8 gcc assembler" superClass="xilinx.gnu.arm.a53.c.toolchain.assembler.release">
+                            <tool id="xilinx.gnu.arm.a53.c.toolchain.assembler.release.1964618513" name="ARM v8 gcc assembler" superClass="xilinx.gnu.arm.a53.c.toolchain.assembler.release">
                                 								
-                                <inputType id="xilinx.gnu.assembler.input.790451791" superClass="xilinx.gnu.assembler.input"/>
+                                <inputType id="xilinx.gnu.assembler.input.2051292097" superClass="xilinx.gnu.assembler.input"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.c.toolchain.compiler.release.505950185" name="ARM v8 gcc compiler" superClass="xilinx.gnu.arm.a53.c.toolchain.compiler.release">
+                            <tool id="xilinx.gnu.arm.a53.c.toolchain.compiler.release.1879164804" name="ARM v8 gcc compiler" superClass="xilinx.gnu.arm.a53.c.toolchain.compiler.release">
                                 								
-                                <option defaultValue="gnu.c.optimization.level.more" id="xilinx.gnu.compiler.option.optimization.level.1968613982" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
+                                <option defaultValue="gnu.c.optimization.level.more" id="xilinx.gnu.compiler.option.optimization.level.742410261" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.option.debugging.level.299546614" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+                                <option id="xilinx.gnu.compiler.option.debugging.level.1315890491" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1385686306" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.1049049192" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspInclude}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.1785476752" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
-                                								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.5024273" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfTPM}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfssl}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/include}&quot;"/>
-                                    								
-                                </option>
-                                								
-                                <option id="xilinx.gnu.compiler.symbols.defined.467671444" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" valueType="definedSymbols">
+                                <option id="xilinx.gnu.compiler.symbols.defined.2121705349" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" useByScannerDiscovery="false" valueType="definedSymbols">
                                     									
                                     <listOptionValue builtIn="false" value="USE_BUILTIN_STARTUP"/>
                                     									
-                                    <listOptionValue builtIn="false" value="__WOLFBOOT"/>
+                                    <listOptionValue builtIn="false" value="ZCU102"/>
                                     									
-                                    <listOptionValue builtIn="false" value="PART_UPDATE_EXT=1"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="PART_SWAP_EXT=1"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="PART_BOOT_EXT=1"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="EXT_FLASH=1"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFBOOT_VERSION=0"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFBOOT_HASH_SHA3_384"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="ARCH_FLASH_OFFSET=0x00"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="MMU"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="XMALLOC_USER"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFSSL_USER_SETTINGS"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="PLATFORM_zynq"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
-                                    								
-                                </option>
-                                								
-                                <inputType id="xilinx.gnu.arm.a53.c.compiler.input.971344845" name="C source files" superClass="xilinx.gnu.arm.a53.c.compiler.input"/>
-                                							
-                            </tool>
-                            							
-                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.compiler.release.864112516" name="ARM v8 g++ compiler" superClass="xilinx.gnu.arm.a53.cxx.toolchain.compiler.release">
-                                								
-                                <option defaultValue="gnu.c.optimization.level.more" id="xilinx.gnu.compiler.option.optimization.level.840357644" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
-                                								
-                                <option id="xilinx.gnu.compiler.option.debugging.level.719541315" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
-                                								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.280145145" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
-                                    									
-                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspInclude}"/>
-                                    								
-                                </option>
-                                								
-                                <option id="xilinx.gnu.compiler.inferred.swplatform.flags.123301926" name="Software Platform Inferred Flags" superClass="xilinx.gnu.compiler.inferred.swplatform.flags" value="   " valueType="string"/>
-                                								
-                                <option id="xilinx.gnu.compiler.dircategory.includes.91691664" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfTPM}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/lib/wolfssl}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/wolfboot/include}&quot;"/>
-                                    								
-                                </option>
-                                								
-                                <option id="xilinx.gnu.compiler.symbols.defined.238754750" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" valueType="definedSymbols">
-                                    									
-                                    <listOptionValue builtIn="false" value="USE_BUILTIN_STARTUP"/>
+                                    <listOptionValue builtIn="false" value="DEBUG_ZYNQ=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="DEBUG=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="__WOLFBOOT"/>
                                     									
+                                    <listOptionValue builtIn="false" value="TARGET_zynq"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="MMU"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="NO_XIP"/>
+                                    									
                                     <listOptionValue builtIn="false" value="PART_UPDATE_EXT=1"/>
                                     									
                                     <listOptionValue builtIn="false" value="PART_SWAP_EXT=1"/>
@@ -421,51 +359,141 @@
                                     									
                                     <listOptionValue builtIn="false" value="WOLFBOOT_HASH_SHA3_384"/>
                                     									
-                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
                                     									
                                     <listOptionValue builtIn="false" value="ARCH_FLASH_OFFSET=0x00"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="MMU"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
                                     									
                                     <listOptionValue builtIn="false" value="XMALLOC_USER"/>
                                     									
                                     <listOptionValue builtIn="false" value="WOLFSSL_USER_SETTINGS"/>
                                     									
-                                    <listOptionValue builtIn="false" value="PLATFORM_zynq"/>
+                                    <listOptionValue builtIn="false" value="WOLFTPM_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFPKCS11_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_DUALBOOT"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_ELF"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.compiler.dircategory.includes.1446899274" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfssl}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfPKCS11}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfTPM}&quot;"/>
+                                    								
+                                </option>
+                                								
+                                <inputType id="xilinx.gnu.arm.a53.c.compiler.input.1231000354" name="C source files" superClass="xilinx.gnu.arm.a53.c.compiler.input"/>
+                                							
+                            </tool>
+                            							
+                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.compiler.release.1580072510" name="ARM v8 g++ compiler" superClass="xilinx.gnu.arm.a53.cxx.toolchain.compiler.release">
+                                								
+                                <option defaultValue="gnu.c.optimization.level.more" id="xilinx.gnu.compiler.option.optimization.level.1949854173" name="Optimization Level" superClass="xilinx.gnu.compiler.option.optimization.level" valueType="enumerated"/>
+                                								
+                                <option id="xilinx.gnu.compiler.option.debugging.level.1796737102" name="Debug Level" superClass="xilinx.gnu.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+                                								
+                                <option id="xilinx.gnu.compiler.inferred.swplatform.includes.599671096" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspInclude}"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.compiler.symbols.defined.1971131134" name="Defined symbols (-D)" superClass="xilinx.gnu.compiler.symbols.defined" valueType="definedSymbols">
+                                    									
+                                    <listOptionValue builtIn="false" value="USE_BUILTIN_STARTUP"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ZCU102"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="DEBUG_ZYNQ=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="DEBUG=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="__WOLFBOOT"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="TARGET_zynq"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ARCH_AARCH64"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="MMU"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="NO_XIP"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="PART_UPDATE_EXT=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="PART_SWAP_EXT=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="PART_BOOT_EXT=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="EXT_FLASH=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_VERSION=0"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_HASH_SHA3_384"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_SIGN_RSA4096"/>
                                     									
                                     <listOptionValue builtIn="false" value="IMAGE_HEADER_SIZE=1024"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="ARCH_FLASH_OFFSET=0x00"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="XMALLOC_USER"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFSSL_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFTPM_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFPKCS11_USER_SETTINGS"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_DUALBOOT"/>
+                                    <listOptionValue builtIn="false" value="WOLFBOOT_ELF"/>
+                                    								
+                                </option>
+                                								
+                                <option id="xilinx.gnu.compiler.dircategory.includes.438324592" name="Include Paths" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/include}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfssl}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfPKCS11}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/lib/wolfTPM}&quot;"/>
                                     								
                                 </option>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.toolchain.archiver.767261844" name="ARM v8 archiver" superClass="xilinx.gnu.arm.a53.toolchain.archiver"/>
+                            <tool id="xilinx.gnu.arm.a53.toolchain.archiver.918007285" name="ARM v8 archiver" superClass="xilinx.gnu.arm.a53.toolchain.archiver"/>
                             							
-                            <tool id="xilinx.gnu.arm.a53.c.toolchain.linker.release.681659723" name="ARM v8 gcc linker" superClass="xilinx.gnu.arm.a53.c.toolchain.linker.release">
+                            <tool id="xilinx.gnu.arm.a53.c.toolchain.linker.release.1953595427" name="ARM v8 gcc linker" superClass="xilinx.gnu.arm.a53.c.toolchain.linker.release">
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1494965646" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.811636089" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspLib}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.1605109420" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.1346328876" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilpm,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.linker.option.lscript.141417098" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../src/lscript.ld" valueType="string"/>
+                                <option id="xilinx.gnu.c.linker.option.lscript.1095966540" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../hal/zynq.ld" valueType="string"/>
                                 								
-                                <inputType id="xilinx.gnu.linker.input.1931061688" superClass="xilinx.gnu.linker.input">
+                                <inputType id="xilinx.gnu.linker.input.1259450710" superClass="xilinx.gnu.linker.input">
                                     									
                                     <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
                                     									
@@ -473,49 +501,37 @@
                                     								
                                 </inputType>
                                 								
-                                <inputType id="xilinx.gnu.linker.input.lscript.1005877855" name="Linker Script" superClass="xilinx.gnu.linker.input.lscript"/>
+                                <inputType id="xilinx.gnu.linker.input.lscript.217588739" name="Linker Script" superClass="xilinx.gnu.linker.input.lscript"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.linker.release.895572153" name="ARM v8 g++ linker" superClass="xilinx.gnu.arm.a53.cxx.toolchain.linker.release">
+                            <tool id="xilinx.gnu.arm.a53.cxx.toolchain.linker.release.1151803604" name="ARM v8 g++ linker" superClass="xilinx.gnu.arm.a53.cxx.toolchain.linker.release">
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.1852291632" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.lpath.393404786" name="Software Platform Library Path" superClass="xilinx.gnu.linker.inferred.swplatform.lpath" valueType="libPaths">
                                     									
                                     <listOptionValue builtIn="false" value="${resolvePlatformFile:project=wolfboot,fileType=bspLib}"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.573336005" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
+                                <option id="xilinx.gnu.linker.inferred.swplatform.flags.1137208635" name="Software Platform Inferred Flags" superClass="xilinx.gnu.linker.inferred.swplatform.flags" valueType="libs">
                                     									
                                     <listOptionValue builtIn="false" value="-Wl,--start-group,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilffs,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilsecure,-lxil,-lgcc,-lc,--end-group"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-Wl,--start-group,-lxilpm,-lxil,-lgcc,-lc,--end-group"/>
                                     								
                                 </option>
                                 								
-                                <option id="xilinx.gnu.c.linker.option.lscript.397854225" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../src/lscript.ld" valueType="string"/>
+                                <option id="xilinx.gnu.c.linker.option.lscript.764522494" name="Linker Script" superClass="xilinx.gnu.c.linker.option.lscript" value="../hal/zynq.ld" valueType="string"/>
                                 							
                             </tool>
                             							
-                            <tool id="xilinx.gnu.arm.a53.size.release.1291750504" name="ARM v8 Print Size" superClass="xilinx.gnu.arm.a53.size.release"/>
+                            <tool id="xilinx.gnu.arm.a53.size.release.1179017622" name="ARM v8 Print Size" superClass="xilinx.gnu.arm.a53.size.release"/>
                             						
                         </toolChain>
                         					
                     </folderInfo>
                     					
-                    <fileInfo id="xilinx.gnu.arm.a53.exe.release.1314953955.361646235" name="spi_drv_stm32.h" rcbsApplicability="disable" resourcePath="src/wolfboot/hal/spi/spi_drv_stm32.h" toolsToInvoke=""/>
-                    					
-                    <fileInfo id="xilinx.gnu.arm.a53.exe.release.1314953955.355507178" name="spi_drv_zynq.h" rcbsApplicability="disable" resourcePath="src/wolfboot/hal/spi/spi_drv_zynq.h" toolsToInvoke=""/>
-                    					
-                    <fileInfo id="xilinx.gnu.arm.a53.exe.release.1314953955.308767333" name="spi_drv_nrf52.h" rcbsApplicability="disable" resourcePath="src/wolfboot/hal/spi/spi_drv_nrf52.h" toolsToInvoke=""/>
-                    					
                     <sourceEntries>
                         						
-                        <entry excluding="src/wolfboot/lib/wolfTPM/examples|src/wolfboot/lib/wolfTPM/tests|src/wolfboot/lib/wolfTPM/IDE|src/wolfboot/lib/wolfssl/tests|src/wolfboot/lib/wolfssl/tirtos|src/wolfboot/lib/wolfssl/swig|src/wolfboot/lib/wolfssl/mqx|src/wolfboot/lib/wolfssl/mplabx|src/wolfboot/lib/wolfssl/IPP|src/wolfboot/lib/wolfssl/mcapi|src/wolfboot/lib/wolfssl/testsuite|src/wolfboot/lib/wolfssl/examples|src/wolfboot/lib/wolfssl/IDE|src/wolfboot/lib/wolfssl/wolfcrypt/user-crypto|src/wolfboot/lib/wolfssl/wolfcrypt/src/sp_x86_64_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/sha512_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/sha256_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/poly1305_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/fe_x25519_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/chacha_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/aes_gcm_asm.S|src/wolfboot/lib/wolfssl/wolfcrypt/src/aes_asm.S|src/wolfboot/src/vector_riscv.S|src/wolfboot/src/update_flash_hwswap.c|src/wolfboot/src/update_flash.c|src/wolfboot/src/boot_riscv.c|src/wolfboot/src/boot_arm.c|src/wolfboot/hal/stm32wb.c|src/wolfboot/hal/stm32l0.c|src/wolfboot/hal/stm32h7.c|src/wolfboot/hal/stm32g0.c|src/wolfboot/hal/stm32f7.c|src/wolfboot/hal/stm32f4.c|src/wolfboot/hal/skeleton.c|src/wolfboot/hal/samr21.c|src/wolfboot/hal/raspi3.c|src/wolfboot/hal/psoc6.c|src/wolfboot/hal/nrf52.c|src/wolfboot/hal/lpc.c|src/wolfboot/hal/kinetis.c|src/wolfboot/hal/hifive1.c|src/wolfboot/hal/cc26x2.c|src/wolfboot/hal/uart/uart_drv_stm32wb.c|src/wolfboot/hal/uart/uart_drv_stm32f4.c|src/wolfboot/hal/uart/uart_drv_lpc.c|src/wolfboot/hal/spi/spi_drv_stm32.h|src/wolfboot/hal/spi/spi_drv_stm32.c|src/wolfboot/hal/spi/spi_drv_nrf52.h|src/wolfboot/hal/spi/spi_drv_nrf52.c|src/wolfboot/IDE/IAR|src/wolfboot/test-app|src/wolfboot/tools|_ide" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+                        <entry excluding="src/qspi_flash.c|IDE/AURIX|IDE/CCS|IDE/MPLAB|IDE/Renesas|.git|IDE/IAR|test-app|tools|lib/wolfPKCS11|lib/wolfTPM|lib/wolfssl/linuxkm|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-aes-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-curve25519.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-sha256-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-sha3-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-32-sha512-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-curve25519.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-sha3-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/armv8-sha512-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-aes-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-curve25519.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-sha256-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-sha3-asm.S|lib/wolfssl/wolfcrypt/src/port/arm/thumb2-sha512-asm.S|lib/wolfssl/wolfcrypt/src/port/autosar|lib/wolfssl/wrapper|lib/wolfssl/zephyr|src/boot_x86_fsp.c|src/boot_x86_fsp_start.S|src/boot_x86_fsp_payload.c|src/boot_x86_64.c|src/boot_renesas.c|src/boot_renesas_start.S|src/boot_ppc_start.S|src/boot_ppc_mp.S|src/boot_ppc.c|src/x86|lib/wolfTPM/examples|lib/wolfTPM/tests|lib/wolfTPM/IDE|lib/wolfssl/tests|lib/wolfssl/tirtos|lib/wolfssl/swig|lib/wolfssl/mqx|lib/wolfssl/mplabx|lib/wolfssl/IPP|lib/wolfssl/mcapi|lib/wolfssl/testsuite|lib/wolfssl/examples|lib/wolfssl/IDE|lib/wolfssl/wolfcrypt/user-crypto|lib/wolfssl/wolfcrypt/src/aes_asm.S|lib/wolfssl/wolfcrypt/src/aes_gcm_asm.S|lib/wolfssl/wolfcrypt/src/aes_gcm_x86_asm.S|lib/wolfssl/wolfcrypt/src/aes_xts_asm.S|lib/wolfssl/wolfcrypt/src/chacha_asm.S|lib/wolfssl/wolfcrypt/src/fe_x25519_asm.S|lib/wolfssl/wolfcrypt/src/poly1305_asm.S|lib/wolfssl/wolfcrypt/src/sha256_asm.S|lib/wolfssl/wolfcrypt/src/sha3_asm.S|lib/wolfssl/wolfcrypt/src/sha512_asm.S|lib/wolfssl/wolfcrypt/src/sm3_asm.S|lib/wolfssl/wolfcrypt/src/sp_sm2_x86_64_asm.S|lib/wolfssl/wolfcrypt/src/sp_x86_64_asm.S|lib/wolfssl/wolfcrypt/src/wc_kyber_asm.S|src/vector_riscv.S|src/update_flash_hwswap.c|src/update_flash.c|src/boot_riscv.c|src/boot_arm.c|hal/aurix_tc3xx.c|hal/cc26x2.c|hal/hifive1.c|hal/imx_rt.c|hal/kinetis.c|hal/kontron_vx3060_s2.c|hal/kontron_vx3060_s2_loader.c|hal/library.c|hal/lpc.c|hal/mcxa.c|hal/nrf52.c|hal/nxp_p1021.c|hal/nxp_ppc.c|hal/nxp_t1024.c|hal/nxp_t2080.c|hal/psoc6.c|hal/raspi3.c|hal/renesas-ra.c|hal/renesas-rx.c|hal/renesas-rz.c|hal/rx65n.c|hal/rx72n.c|hal/same51.c|hal/samr21.c|hal/sim.c|hal/skeleton.c|hal/stm32c0.c|hal/stm32f4.c|hal/stm32f7.c|hal/stm32g0.c|hal/stm32h5.c|hal/stm32h7.c|hal/stm32l0.c|hal/stm32l4.c|hal/stm32l5.c|hal/stm32_tz.c|hal/stm32u5.c|hal/stm32wb.c|hal/ti_hercules.c|hal/x86_64_efi.c|hal/x86_fsp_qemu.c|hal/x86_fsp_qemu_loader.c|hal/x86_fsp_tgl.c|hal/x86_uart.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
                         					
                     </sourceEntries>
                     				
@@ -533,7 +549,7 @@
     	
     <storageModule moduleId="cdtBuildSystem" version="4.0.0">
         		
-        <project id="wolfboot.xilinx.gnu.arm.a53.exe.768553918" name="Xilinx ARM v8 Executable" projectType="xilinx.gnu.arm.a53.exe"/>
+        <project id="wolfboot.xilinx.gnu.arm.a53.exe.1457916414" name="Xilinx ARM v8 Executable" projectType="xilinx.gnu.arm.a53.exe"/>
         	
     </storageModule>
     	
@@ -541,25 +557,25 @@
         		
         <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
         		
-        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.debug.104647700;xilinx.gnu.arm.a53.exe.debug.104647700.;xilinx.gnu.arm.a53.c.toolchain.compiler.debug.347251587;xilinx.gnu.arm.a53.c.compiler.input.2101454273">
+        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.debug.148599057;xilinx.gnu.arm.a53.exe.debug.148599057.">
             			
             <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.xilinx.managedbuilder.ui.ARMA53GCCManagedMakePerProjectProfileC"/>
             		
         </scannerConfigBuildInfo>
         		
-        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.debug.104647700;xilinx.gnu.arm.a53.exe.debug.104647700.">
+        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.release.85633169;xilinx.gnu.arm.a53.exe.release.85633169.">
             			
             <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.xilinx.managedbuilder.ui.ARMA53GCCManagedMakePerProjectProfileC"/>
             		
         </scannerConfigBuildInfo>
         		
-        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.release.1314953955;xilinx.gnu.arm.a53.exe.release.1314953955.;xilinx.gnu.arm.a53.c.toolchain.compiler.release.505950185;xilinx.gnu.arm.a53.c.compiler.input.971344845">
+        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.debug.148599057;xilinx.gnu.arm.a53.exe.debug.148599057.;xilinx.gnu.arm.a53.c.toolchain.compiler.debug.1919096360;xilinx.gnu.arm.a53.c.compiler.input.68805176">
             			
             <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.xilinx.managedbuilder.ui.ARMA53GCCManagedMakePerProjectProfileC"/>
             		
         </scannerConfigBuildInfo>
         		
-        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.release.1314953955;xilinx.gnu.arm.a53.exe.release.1314953955.">
+        <scannerConfigBuildInfo instanceId="xilinx.gnu.arm.a53.exe.release.85633169;xilinx.gnu.arm.a53.exe.release.85633169.;xilinx.gnu.arm.a53.c.toolchain.compiler.release.1879164804;xilinx.gnu.arm.a53.c.compiler.input.1231000354">
             			
             <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.xilinx.managedbuilder.ui.ARMA53GCCManagedMakePerProjectProfileC"/>
             		
@@ -582,5 +598,7 @@
         </configuration>
         	
     </storageModule>
+    	
+    <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
     
 </cproject>

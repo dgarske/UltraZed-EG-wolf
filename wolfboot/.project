@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>wolfboot</name>
-	<comment>Created by Vitis v2020.1</comment>
+	<comment>Created by Vitis v2022.1</comment>
 	<projects>
-		<project>UltraZed-EG-Platform</project>
+		<project>zcu102</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
-			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 			</arguments>
 		</buildCommand>

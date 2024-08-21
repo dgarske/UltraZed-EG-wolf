@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="ASCII"?>
-<systemproject:SystemProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdsproject="http://www.xilinx.com/sdsproject" xmlns:systemproject="http://www.xilinx.com/systemproject" name="wolfboot_system" platform="C:/Xilinx/workspace/L3/UltraZed-EG-Platform/export/UltraZed-EG-Platform/UltraZed-EG-Platform.xpfm" platformUID="xilinx:::0.0(custom)" sysConfig="UltraZed-EG-Platform" runtime="C/C++" rootFSLocation="" linuxImage="" sysroot="">
-  <configuration name="Debug">
+<systemproject:SystemProject xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sdsproject="http://www.xilinx.com/sdsproject" xmlns:systemproject="http://www.xilinx.com/systemproject" name="wolfboot_system" platform="C:/Xilinx/workspace_20221/zcu102/export/zcu102/zcu102.xpfm" platformUID="xilinx:zcu102::0.0(custom)" sysConfig="zcu102" runtime="C/C++" rootFSLocation="" linuxImage="" sysroot="">
+  <configuration name="Debug" id="com.xilinx.sdx.system.managedbuilder.debugConfiguration.1706727881">
     <configBuildOptions xsi:type="systemproject:SystemOptions">
-      <applications name="wolfboot" domainName="domain_psu_cortexa53_0" domainPrettyName="domain_psu_cortexa53_0" appBuildConfig="Debug"/>
+      <applications name="wolfboot" domainName="standalone_domain" domainPrettyName="standalone on psu_cortexa53_0" appBuildConfig="Debug"/>
       <options xsi:type="sdsproject:Option" gensdcard="true" dmclkid="0"/>
     </configBuildOptions>
+    <lastBuildOptions xsi:type="systemproject:SystemOptions">
+      <applications name="wolfboot" domainName="standalone_domain" domainPrettyName="standalone on psu_cortexa53_0" appBuildConfig="Debug"/>
+      <options xsi:type="sdsproject:Option" gensdcard="true" dmclkid="0"/>
+    </lastBuildOptions>
   </configuration>
-  <configuration name="Release">
+  <configuration name="Release" id="com.xilinx.sdx.system.managedbuilder.releaseConfiguration.55847608">
     <configBuildOptions xsi:type="systemproject:SystemOptions">
-      <applications name="wolfboot" domainName="domain_psu_cortexa53_0" domainPrettyName="domain_psu_cortexa53_0" appBuildConfig="Release"/>
+      <applications name="wolfboot" domainName="standalone_domain" domainPrettyName="standalone on psu_cortexa53_0" appBuildConfig="Release"/>
       <options xsi:type="sdsproject:Option" gensdcard="true" dmclkid="0"/>
     </configBuildOptions>
   </configuration>
